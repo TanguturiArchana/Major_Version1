@@ -1,0 +1,10 @@
+.dashboard {
+  background-color: #f9fafb; /* light gray background */
+  min-height: 100vh;
+  padding-bottom: 40px;
+}
+
+/* Optional — give sections some breathing room */
+.dashboard section {
+  margin-bottom: 40px;
+}

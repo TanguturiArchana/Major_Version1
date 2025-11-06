@@ -1,0 +1,28 @@
+.footer {
+  background-color: #0f172a; /* dark navy gray */
+  color: #cbd5e1; /* light gray text */
+  text-align: center;
+  padding: 24px 10px;
+  font-size: 0.95rem;
+}
+
+.footer p {
+  margin: 6px 0;
+}
+
+.footer-copy {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: #94a3b8; /* lighter gray for copyright line */
+}
+
+/* Small hover effect if you want to add links later */
+.footer a {
+  color: #60a5fa;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.footer a:hover {
+  color: #93c5fd;
+}
