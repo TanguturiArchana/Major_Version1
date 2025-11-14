@@ -56,59 +56,6 @@ const ApplicationsPanel = () => {
     };
     fetchJobs();
   }, []);
-
-  // ✅ 2. Fetch applications for selected job and enrich with worker profiles
-  // const fetchApplications = async () => {
-  //   if (!selectedJobId) return;
-
-  //   setLoading(true);
-  //   try {
-  //     const res = await axios.get(`${API_BASE}/applications/job/${selectedJobId}`);
-  //     const apps = res.data || [];
-
-  //     // Collect unique workerIds and fetch their profiles in parallel
-  //     const workerIds = [...new Set(apps.map((a) => a.workerId).filter(Boolean))];
-  //     const workersById = {};
-
-  //     if (workerIds.length > 0) {
-  //       const workerResponses = await Promise.all(
-  //         workerIds.map(async (id) => {
-  //           try {
-  //             const response = await axios.get(`${API_BASE}/users/${id}`);
-  //             console.log(`Fetched worker ${id}:`, response.data); // Debug log
-  //             return { id, data: response.data };
-  //           } catch (e) {
-  //             console.error(`Failed to load user ${id}:`, e);
-  //             return { id, data: null };
-  //           }
-  //         })
-  //       );
-
-  //       workerResponses.forEach((wr) => {
-  //         if (wr && wr.id != null && wr.data) {
-  //           workersById[wr.id] = wr.data;
-  //           console.log(`Stored worker ${wr.id} in workersById:`, wr.data); // Debug log
-  //         }
-  //       });
-  //     }
-
-  //     // Attach workerProfile to each application object
-  //     const enriched = apps.map((app) => {
-  //       const profile = workersById[app.workerId];
-  //       console.log(`Enriching application for worker ${app.workerId}:`, profile); // Debug log
-  //       return { ...app, workerProfile: profile || null };
-  //     });
-
-  //     setApplications(enriched);
-  //   } catch (err) {
-  //     console.error("Error fetching applications:", err);
-  //     setMessage("Failed to load applications. Please try again.");
-  //     setTimeout(() => setMessage(""), 3000);
-  //   }
-  //   setLoading(false);
-  // };
-
-  // ✅ 2. Fetch applications for selected job and enrich with worker profiles
 const fetchApplications = async () => {
   if (!selectedJobId) return;
 
@@ -404,39 +351,6 @@ const fetchApplications = async () => {
 
       {/* ✅ Table */}
       {(() => {
-        // compute filtered applications here (keeps JSX tidy)
-        // const filteredApplications = applications.filter((app) => {
-        //   const p = app.workerProfile;
-
-        //   // Use applied filters (only updated when Search clicked). If none applied, show all.
-        //   const minAgeNum = appliedMinAge;
-        //   const maxAgeNum = appliedMaxAge;
-        //   const minExpNum = appliedMinExperience;
-        //   const maxExpNum = appliedMaxExperience;
-        //   const pinApplied = appliedFilterPincode && appliedFilterPincode.trim() !== "" ? String(appliedFilterPincode).trim() : null;
-
-        //   const anyFilterActive = (minAgeNum !== null) || (maxAgeNum !== null) || (minExpNum !== null) || (maxExpNum !== null) || (pinApplied !== null);
-        //   if (!p && anyFilterActive) return false;
-
-        //   if (p) {
-        //     const ageNum = resolveAge(p);
-        //     const expNum = resolveExperience(p);
-
-        //     if (minAgeNum !== null && (ageNum == null || isNaN(ageNum) || ageNum < minAgeNum)) return false;
-        //     if (maxAgeNum !== null && (ageNum == null || isNaN(ageNum) || ageNum > maxAgeNum)) return false;
-
-        //     if (minExpNum !== null && (expNum == null || isNaN(expNum) || expNum < minExpNum)) return false;
-        //     if (maxExpNum !== null && (expNum == null || isNaN(expNum) || expNum > maxExpNum)) return false;
-
-        //     const pincodeStr = resolvePincode(p);
-        //     // Now pincode is exact match if applied
-        //     if (pinApplied !== null && pincodeStr !== pinApplied) return false;
-        //   }
-
-        //   return true;
-        // });
-
-        // ✅ Corrected filtering logic (only this part needs to change)
   const filteredApplications = applications.filter((app) => {
   const worker = app.workerProfile || app.worker;
 
