@@ -1,3 +1,4 @@
+
 package com.osi.shramsaathi.controller;
 
 import com.osi.shramsaathi.dto.UserRequest;
@@ -30,4 +31,9 @@ public class UserController {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
+    /** ⭐ FIX ADDED — Get user by ID */
+    @GetMapping("/{id}")
+    public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.getUserById(id));
+    }
 }
