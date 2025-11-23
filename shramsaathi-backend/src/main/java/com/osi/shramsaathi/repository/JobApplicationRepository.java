@@ -9,10 +9,10 @@ import java.util.Optional;
 
 @Repository
 public interface JobApplicationRepository extends JpaRepository<JobApplication, Long> {
-
+    
     // ✅ Get all applications for a specific job
     List<JobApplication> findByJobId(Long jobId);
-
+    
     // ✅ Count total applications for a job
     long countByJobId(Long jobId);
 

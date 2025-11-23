@@ -23,6 +23,10 @@ public class JobPostingService {
     public List<JobPosting> getAllJobs() {
         return repository.findAll();
     }
+    public List<JobPosting> getJobsByOwner(Long ownerId) {
+        return repository.findByOwnerId(ownerId);
+    }
+
 
    
 }

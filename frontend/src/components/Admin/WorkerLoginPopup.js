@@ -2,19 +2,43 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Popup.css";
 import API from "./api";
-const LoginPopup = ({ onClose }) => {
+import axios from "axios";
+const LoginPopup = ({ onClose,name ,phone,isAfterWorkerRegister }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const nav=useNavigate();
+  async function getWorkerId(name, phone) {
+  const res = await axios.get(`http://localhost:8083/api/users/findWorker`, {
+    params: { name, phone }
+  });
+  return res.data.id;
+}
 
- 
+
   const handleLogin = async (e) => {
   e.preventDefault();
   try {
-    const res = await API.post(`/login/user?name=${username}&password=${password}`);
+     const res = await API.post(`/login/user?name=${username}&password=${password}`);
     if (res.status === 200) {
-      alert("Login successful!");
-      nav("/workerDashboard");
+      if(isAfterWorkerRegister ){
+        const id = await getWorkerId(name, phone);
+        console.log("login via register",id);
+        alert("Worker Login successful!");
+        nav("workerDashboard",{state:{id}});
+        
+
+      }
+      else{
+        const res = await axios.get(`http://localhost:8083/api/users/findByNameAndPassword`, {
+           params: { name: username, password } 
+        });
+        const id=res.data.id;
+        console.log("login via login",id);
+        alert("Worker Login successful!");
+        nav("/workerDashboard", {state:{id}});
+
+      } 
+      
     }
   } catch (err) {
     alert(err.response.data);

@@ -2,8 +2,12 @@ package com.osi.shramsaathi.controller;
 
 import com.osi.shramsaathi.model.Job;
 import com.osi.shramsaathi.model.JobApplication;
+import com.osi.shramsaathi.model.JobPosting;
 import com.osi.shramsaathi.repository.JobRepository;
+import com.osi.shramsaathi.service.JobPostingService;
 import com.osi.shramsaathi.repository.JobApplicationRepository;
+
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,10 +21,12 @@ public class JobApplicationController {
 
     private final JobApplicationRepository appRepo;
     private final JobRepository jobRepo;
+    private final JobPostingService jobpostServ;
 
-    public JobApplicationController(JobApplicationRepository appRepo, JobRepository jobRepo) {
+    public JobApplicationController(JobApplicationRepository appRepo, JobRepository jobRepo, JobPostingService jobpostServ) {
         this.appRepo = appRepo;
         this.jobRepo = jobRepo;
+        this.jobpostServ=jobpostServ;
     }
 
     // ✅ Worker applies for a job (Prevent duplicate applications)
@@ -49,6 +55,11 @@ public class JobApplicationController {
     public ResponseEntity<List<JobApplication>> getApplicationsByJob(@PathVariable Long jobId) {
         return ResponseEntity.ok(appRepo.findByJobId(jobId));
     }
+    @GetMapping("/owner/{ownerId}")
+    public ResponseEntity<List<JobPosting>> getJobsByOwner(@PathVariable Long ownerId) {
+        return ResponseEntity.ok(jobpostServ.getJobsByOwner(ownerId));
+    }
+
 
     // ✅ Get all applications made by a specific worker (Worker View)
     @GetMapping("/worker/{workerId}")

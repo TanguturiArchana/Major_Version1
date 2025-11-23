@@ -1,6 +1,7 @@
 import { useState } from "react";
 import OwnerLoginPopup from "./OwnerLoginPopup";
 import "./Popup.css";
+import axios from "axios";
 import WorkerLoginPopup from "./WorkerLoginPopup";
 import API from "./api";
 const Popup = ({ onClose }) => {
@@ -19,12 +20,12 @@ const Popup = ({ onClose }) => {
   const [generatedPassword, setGeneratedPassword] = useState("");
    const [age, setAge] = useState("");
   const [experience, setExperience] = useState("");
+  const [isAfterRegister, setIsAfterRegister] = useState(false);
+  const [isAfterWorkerRegister, setIsAfterWorkerRegister] = useState(false);
+
 
 
   
-  const handleWorkerSubmit = async (e) => {
-  e.preventDefault();
-
   const workerData = {
     name,
     phone,
@@ -36,6 +37,9 @@ const Popup = ({ onClose }) => {
     age,
     experience
   };
+  const handleWorkerSubmit = async (e) => {
+  e.preventDefault();
+
 
   try {
     const res = await API.post("/register/user", workerData);
@@ -64,6 +68,7 @@ const handleOwnerSubmit = async (e) => {
   e.preventDefault();
   try {
     const res = await API.post("/register/owner", ownerData);
+    setName(ownerData.name);
     const password = res.data.split(": ").pop();
     setGeneratedPassword(password);
     setShowSuccess("owner");
@@ -74,12 +79,16 @@ const handleOwnerSubmit = async (e) => {
 
   // Show Worker Login Popup
   if (showWorkerLogin) {
-    return <WorkerLoginPopup onClose={onClose} />;
+    return <WorkerLoginPopup onClose={onClose} name={name} phone={phone} isAfterWorkerRegister={isAfterWorkerRegister}/>;
   }
 
   // Show Owner Login Popup
   if (showOwnerLogin) {
-    return <OwnerLoginPopup onClose={onClose} />;
+   console.log("send",name);
+        console.log("send",ownerData.phone);
+        console.log(name);
+        console.log(ownerData.phone);
+    return <OwnerLoginPopup onClose={onClose} name={name} phone={ownerData.phone} isAfterRegister={isAfterRegister}/>;
   }
 
   // Success message after registration
@@ -90,6 +99,7 @@ const handleOwnerSubmit = async (e) => {
           <h2>Registered Successfully!!!</h2>
           <p>
             Your password to login to ShramSaathi is <b>{generatedPassword}</b> <br />Username: <b>{name}</b>
+            
           </p>
           <button
             className="btn-primary"
@@ -127,8 +137,8 @@ const handleOwnerSubmit = async (e) => {
             <input type="text" placeholder="Pincode" required onChange={(e)=>setPincode(e.target.value)} />
             <input type="number" placeholder="Age" required  onChange={(e)=>setAge(e.target.value)}/>
             <input type="text" placeholder="Experience" required  onChange={(e)=>setExperience(e.target.value)}/>
-            <button type="submit" className="btn-primary">
-              Submit
+            <button type="submit" className="btn-primary" onClick={() => {setIsAfterWorkerRegister(true); }}>
+              Register
             </button>
           <button className="btn-primary" onClick={()=>setShowWorkerLogin(true)}>
             Login
@@ -149,12 +159,6 @@ const handleOwnerSubmit = async (e) => {
         <div className="popup-box form-box">
           <h2>Register Business Owner</h2>
           <form onSubmit={handleOwnerSubmit}>
-            <input
-              type="text"
-              placeholder="Full Name"
-              required
-              onChange={(e) => setName(e.target.value)}
-            />
             <input type="text" placeholder="Full Name" required onChange={(e)=>setOwnerData({...ownerData, name:e.target.value})}/>
             <input type="tel" placeholder="Phone Number" required onChange={(e)=>setOwnerData({...ownerData, phone:e.target.value})}/>
             <input type="email" placeholder="Email Address" required onChange={(e)=>setOwnerData({...ownerData, address:e.target.value})}/>
@@ -162,7 +166,7 @@ const handleOwnerSubmit = async (e) => {
             <input type="text" placeholder="District" required onChange={(e)=>setOwnerData({...ownerData, district:e.target.value})}/>
             <input type="text" placeholder="Mandal" required onChange={(e)=>setOwnerData({...ownerData, mandal:e.target.value})}/>
             <input type="text" placeholder="Pincode" required onChange={(e)=>setOwnerData({...ownerData, pincode:e.target.value})}/>
-            <button type="submit" className="btn-primary">
+            <button type="submit" className="btn-primary"  onClick={() => {setIsAfterRegister(true); }}>
             
               Register
             </button>

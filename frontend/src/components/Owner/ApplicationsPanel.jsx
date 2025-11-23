@@ -2,7 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import "./ApplicationsPanel.css";
 import Chat from "./Chat";
-
+import { useOutletContext } from "react-router-dom";
 const API_BASE = "http://localhost:8083/api";
 
 const ApplicationsPanel = () => {
@@ -28,15 +28,17 @@ const ApplicationsPanel = () => {
   const [appliedMaxExperience, setAppliedMaxExperience] = useState(null);
   const [appliedFilterPincode, setAppliedFilterPincode] = useState("");
   const [message, setMessage] = useState(""); // For feedback messages
+    const state = useOutletContext();
 
   // ✅ 1. Fetch all jobs for this owner
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        const res = await axios.get(`${API_BASE}/jobs/owner/1`); // ownerId = 1 (temporary)
+        const res = await axios.get(`${API_BASE}/jobs/owner/${state.id}`); // ownerId = 1 (temporary)
         const jobsData = res.data;
 
         // Add application counts
+
         const jobsWithCounts = await Promise.all(
           jobsData.map(async (job) => {
             try {

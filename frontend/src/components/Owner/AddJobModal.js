@@ -2,16 +2,16 @@ import { useState } from "react";
 import { jobService } from "../../services/jobService";
 import "./AddJobModal.css";
 import "./JobManager.css";
+import axios from "axios";
 
-
-const AddJobModal = ({ closeModal, onJobAdded }) => {
+const AddJobModal = ({ closeModal, onJobAdded ,id}) => {
   const [form, setForm] = useState({
     title: "",
     skillNeeded: "",
     location: "",
     pay: "",
     duration: "",
-    ownerId: 1,
+    ownerId: id,
     status: "active",
     area: "",
     colony: "",
@@ -28,7 +28,13 @@ const AddJobModal = ({ closeModal, onJobAdded }) => {
     try {
   // Normalize numeric fields: pincode -> int
       const payload = { ...form };
-      if (payload.pincode === "") delete payload.pincode; else payload.pincode = parseInt(payload.pincode);
+          
+      await axios.get(`http://localhost:8083/api/jobs/owner/${id}`)
+      .then(res => console.log(res.data))
+      .catch(err => console.log(err));
+
+      if (payload.pincode === "") delete payload.pincode;
+      else payload.pincode = parseInt(payload.pincode);
 
       await jobService.addJob(payload);
       onJobAdded();

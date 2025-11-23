@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react";
 import { jobService } from "../../services/jobService";
 import { workerService } from "../../services/workerService";
+import { useOutletContext } from "react-router-dom";
+
 import AddJobModal from "./AddJobModal";
 import "./JobManager.css";
 import OwnerHeader from "./OwnerHeader";
+import axios from "axios";
+const API_BASE = "http://localhost:8083/api";
 
 const JobManager = () => {
   const [jobs, setJobs] = useState([]);
@@ -11,9 +15,12 @@ const JobManager = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedView, setSelectedView] = useState('jobs');
 
+  const state = useOutletContext();
+ 
   const fetchJobs = async () => {
-    const data = await jobService.getAllJobs();
-    setJobs(data);
+    console.log("jobManager",state.id);
+    const res = await axios.get(`${API_BASE}/jobs/owner/${state.id}`);
+    setJobs(res.data);
   };
 
   const fetchWorkers = async () => {
@@ -32,8 +39,8 @@ const JobManager = () => {
       fetchJobs();
     }
   };
-
   return (
+   
     <div className="job-manager-container">
       {/* Header */}
       <OwnerHeader
@@ -164,6 +171,7 @@ const JobManager = () => {
           <AddJobModal
             closeModal={() => setShowModal(false)}
             onJobAdded={fetchJobs}
+            id={state.id}
           />
         </div>
       )}

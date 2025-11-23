@@ -16,6 +16,9 @@ import OwnerLayout from "./components/Owner/OwnerLayout";
 import JobManager from "./components/Owner/JobManager";
 import Analytics from "./components/Owner/Analytics";
 import ApplicationsPanel from "./components/Owner/ApplicationsPanel";
+import OwnerProfile from "./components/Owner/OwnerProfile";
+import WorkerProfile from "./components/Worker/WorkerProfile";
+
 
 function App() {
   return (
@@ -39,6 +42,7 @@ function App() {
 
         {/* 👷 Worker Dashboard */}
         <Route path="/workerDashboard" element={<WorkerDashboard />} />
+        <Route path="/WorkerProfile" element={<WorkerProfile />} />
 
         {/* 🧑‍💼 Owner Section with Sidebar */}
         <Route element={<OwnerLayout />}>
@@ -47,6 +51,9 @@ function App() {
           <Route path="/owner/jobs" element={<JobManager />} />
           <Route path="/owner/analytics" element={<Analytics />} />
           <Route path="/owner/applications" element={<ApplicationsPanel />} />
+          <Route path="/owner/profile" element={<OwnerProfile />} />
+          
+
         </Route>
       </Routes>
     </Router>

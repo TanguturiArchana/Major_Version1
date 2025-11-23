@@ -4,26 +4,26 @@ import { connect as wsConnect, disconnect as wsDisconnect, send as wsSend, subsc
 import ChatModal from "./ChatModal";
 import RouteMap from "./RouteMap";
 import "./WorkerDashboard.css";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const API_BASE = "http://localhost:8083/api";
 
 const WorkerDashboard = () => {
-  // workerId should come from auth/session. Make it stateful so we can set it
-  // after creating/saving the profile. Initially null until known.
-  const [workerId, setWorkerId] = useState(null);
-
-  const [jobs, setJobs] = useState([]);
-  const [applications, setApplications] = useState([]);
-  const [workerProfile, setWorkerProfile] = useState({
-    name: "Rama",
-    skill: "Electrician",
-    location: "Hyderabad",
-    contact: "9876543210",
-    // worker pincode (used to geocode worker origin). Replace with real data for logged-in user.
-    area: "",
-    colony: "",
+   const location = useLocation();
+    const navigate = useNavigate();
+    const [workerId, setWorkerId] = useState(null);
+    const [jobs, setJobs] = useState([]);
+    const [applications, setApplications] = useState([]);
+    const [workerProfile, setWorkerProfile] = useState({
+      name: "",
+      skill: "",
+      location: "",
+      contact: "",
+      // worker pincode (used to geocode worker origin). Replace with real data for logged-in user.
+      area: "",
+      colony: "",
     state: "",
-    pincode: "500081",
+    pincode: "",
     age: "",
     experienceYears: "",
   });
@@ -43,10 +43,26 @@ const WorkerDashboard = () => {
   const [watchId, setWatchId] = useState(null);
   const [showPincodeModal, setShowPincodeModal] = useState(false);
   const [modalPincode, setModalPincode] = useState("");
+  
+useEffect(() => {
+  if (location.state) {
+    // store in localStorage only once
+    localStorage.setItem("ownerState", JSON.stringify(location.state));
+    setWorkerId(location.state.id);
+    
+  }
+}, [location.state]);
 
-  // Geocode a postal code (pincode) to lat/lon using Nominatim (OpenStreetMap).
-  // Geocode a location (area/colony/state/pincode/location string) using Nominatim.
-  // Tries a few query formats and returns [lat, lon] or null on failure.
+const state = location.state || JSON.parse(localStorage.getItem("workerState"));
+
+useEffect(() => {
+  if (!state) {
+    navigate("/");
+  }
+}, [state]);
+
+
+
   const geocodeLocation = async ({ area, colony, state, pincode, text }) => {
     const base = "https://nominatim.openstreetmap.org/search";
     const cleanP = pincode ? String(pincode).trim() : "";
@@ -147,14 +163,6 @@ const WorkerDashboard = () => {
   // ✅ Fetch worker applications with full owner information
   const fetchApplications = async () => {
     try {
-      if (!workerId) {
-        setApplications([]);
-        setMessage("⚠️ Save your profile first so applications can be linked to your account.");
-        setTimeout(() => setMessage(""), 3000);
-        return;
-      }
-
-      // Get applications and jobs in parallel for efficiency
       const [applicationsRes, jobsRes] = await Promise.all([
         axios.get(`${API_BASE}/applications/worker/${workerId}`),
         axios.get(`${API_BASE}/jobs`)
@@ -205,16 +213,7 @@ const WorkerDashboard = () => {
   // ✅ Apply for a job (protected against duplicates)
   const handleApply = async (job) => {
     try {
-      // Ensure worker has a backend id. If not, save profile first.
-      if (!workerId) {
-        const savedId = await handleProfileSave();
-        if (!savedId) {
-          setMessage('⚠️ Please save your profile before applying.');
-          setTimeout(() => setMessage(''), 3000);
-          return;
-        }
-      }
-
+      
       const response = await axios.post(`${API_BASE}/applications`, {
         jobId: job.id,
         workerId,
@@ -239,52 +238,7 @@ const WorkerDashboard = () => {
     setTimeout(() => setMessage(""), 3000);
   };
 
-  // ✅ Profile update handler
-  const handleProfileChange = (e) => {
-    const { name, value } = e.target;
-    setWorkerProfile((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleProfileSave = async () => {
-    // Persist worker profile to backend (upsert via UserController)
-    try {
-      const payload = {
-        name: workerProfile.name || "",
-        phone: workerProfile.contact || "",
-        address: workerProfile.location || "",
-        workType: workerProfile.skill || "",
-        // backend requires district/mandal (UserRequest validation). Use placeholder if missing.
-        district: workerProfile.district || "Unknown",
-        mandal: workerProfile.mandal || "Unknown",
-        pincode: workerProfile.pincode ? parseInt(String(workerProfile.pincode).trim(), 10) : 0,
-        area: workerProfile.area || "",
-        colony: workerProfile.colony || "",
-        state: workerProfile.state || "",
-        age: workerProfile.age ? parseInt(String(workerProfile.age), 10) : null,
-        experienceYears: workerProfile.experienceYears ? parseInt(String(workerProfile.experienceYears), 10) : null,
-      };
-
-      const res = await axios.post(`${API_BASE}/users`, payload);
-      if (res && res.data) {
-        setMessage("✅ Profile saved to server.");
-        // If backend returned an id, use it as workerId for future actions
-        if (res.data.id) {
-          setWorkerId(res.data.id);
-          return res.data.id;
-        }
-      } else {
-        setMessage("✅ Profile updated locally.");
-      }
-    } catch (err) {
-      console.error('Profile save failed', err);
-      // show friendly fallback message
-      setMessage("⚠️ Could not save profile to server. Saved locally.");
-    }
-
-    setTimeout(() => setMessage(""), 3000);
-    return null;
-  };
-
+  
   // Start sharing worker's browser geolocation to the backend via STOMP
   const startSharingLocation = () => {
     if (!navigator.geolocation) {
@@ -360,12 +314,12 @@ const WorkerDashboard = () => {
         >
           📄 My Applications
         </button>
-        <button
-          className={activeTab === "profile" ? "tab active" : "tab"}
-          onClick={() => setActiveTab("profile")}
-        >
-          👤 My Profile
-        </button>
+      <button
+      className={activeTab === "profile" ? "tab active" : "tab"}
+      onClick={() => navigate("/WorkerProfile", { state: { id: workerId } })}>
+      👤 My Profile
+      </button>
+
       </div>
 
       {/* JOBS TAB */}
@@ -606,88 +560,6 @@ const WorkerDashboard = () => {
               </tbody>
             </table>
           )}
-        </div>
-      )}
-
-      {/* PROFILE TAB */}
-      {activeTab === "profile" && (
-        <div className="profile-container">
-          <h2>🧾 Edit Profile</h2>
-          <div className="profile-form">
-            <label>Name</label>
-            <input
-              type="text"
-              name="name"
-              value={workerProfile.name}
-              onChange={handleProfileChange}
-            />
-            <label>Skill</label>
-            <input
-              type="text"
-              name="skill"
-              value={workerProfile.skill}
-              onChange={handleProfileChange}
-            />
-            <label>Location</label>
-            <input
-              type="text"
-              name="location"
-              value={workerProfile.location}
-              onChange={handleProfileChange}
-            />
-            <label>Area / Locality</label>
-            <input
-              type="text"
-              name="area"
-              value={workerProfile.area}
-              onChange={handleProfileChange}
-            />
-            <label>Colony / Society</label>
-            <input
-              type="text"
-              name="colony"
-              value={workerProfile.colony}
-              onChange={handleProfileChange}
-            />
-            <label>State</label>
-            <input
-              type="text"
-              name="state"
-              value={workerProfile.state}
-              onChange={handleProfileChange}
-            />
-            <label>Contact</label>
-            <input
-              type="text"
-              name="contact"
-              value={workerProfile.contact}
-              onChange={handleProfileChange}
-            />
-            <label>Age</label>
-            <input
-              type="number"
-              name="age"
-              value={workerProfile.age}
-              onChange={handleProfileChange}
-            />
-            <label>Experience (years)</label>
-            <input
-              type="number"
-              name="experienceYears"
-              value={workerProfile.experienceYears}
-              onChange={handleProfileChange}
-            />
-            <label>Pincode</label>
-            <input
-              type="text"
-              name="pincode"
-              value={workerProfile.pincode}
-              onChange={handleProfileChange}
-            />
-            <button className="save-btn" onClick={handleProfileSave}>
-              💾 Save Profile
-            </button>
-          </div>
         </div>
       )}
 
