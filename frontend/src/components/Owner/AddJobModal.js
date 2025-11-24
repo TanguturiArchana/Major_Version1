@@ -17,6 +17,8 @@ const AddJobModal = ({ closeModal, onJobAdded ,id}) => {
     colony: "",
     state: "",
     pincode: "",
+    ownerName: "",
+    decisionDeadline: ""   // ✅ correct name matches backend Job.java
    });
 
   const handleChange = (e) => {
@@ -35,6 +37,7 @@ const AddJobModal = ({ closeModal, onJobAdded ,id}) => {
 
       if (payload.pincode === "") delete payload.pincode;
       else payload.pincode = parseInt(payload.pincode);
+       if (payload.decisionDeadline === "") delete payload.decisionDeadline;
 
       await jobService.addJob(payload);
       onJobAdded();
@@ -53,6 +56,22 @@ const AddJobModal = ({ closeModal, onJobAdded ,id}) => {
           name="title"
           placeholder="Job Title"
           value={form.title}
+          onChange={handleChange}
+          required
+        />
+          <input
+          name="ownerName"
+          placeholder="Owner Name"
+          value={form.ownerName}
+          onChange={handleChange}
+          required
+        />
+
+        {/* FIXED → must use decisionDeadline */}
+        <input
+          type="date"
+          name="decisionDeadline"
+          value={form.decisionDeadline}
           onChange={handleChange}
           required
         />

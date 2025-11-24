@@ -37,6 +37,8 @@ public class JobServiceImpl implements JobService {
         JobResponse r = new JobResponse();
         r.setId(job.getId());
         r.setOwnerId(job.getOwnerId());
+        r.setOwnerName(job.getOwnerName());                 
+      r.setDecisionDeadline(job.getDecisionDeadline());   
         r.setTitle(job.getTitle());
         r.setSkillNeeded(job.getSkillNeeded());
         r.setLocation(job.getLocation());
@@ -105,6 +107,8 @@ public class JobServiceImpl implements JobService {
     public JobResponse createJob(JobRequest request) {
         Job job = new Job();
         job.setOwnerId(request.getOwnerId());
+        job.setOwnerName(request.getOwnerName());              
+      job.setDecisionDeadline(request.getDecisionDeadline()); 
         job.setTitle(request.getTitle());
         job.setSkillNeeded(request.getSkillNeeded());
         job.setLocation(request.getLocation());
@@ -138,6 +142,8 @@ public class JobServiceImpl implements JobService {
         job.setArea(request.getArea());
         job.setColony(request.getColony());
         job.setState(request.getState());
+        job.setOwnerName(request.getOwnerName());                
+        job.setDecisionDeadline(request.getDecisionDeadline());   
 
         double[] coords = geocodeRequest(request);
         if (coords != null) {

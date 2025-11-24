@@ -1,5 +1,7 @@
 package com.osi.shramsaathi.dto;
 
+import java.time.LocalDate;
+
 public class JobRequest {
     private Long ownerId;
     private String title;
@@ -13,10 +15,20 @@ public class JobRequest {
     private String state;
     private Double latitude;
     private Double longitude;
+    private String ownerName;            
+    private LocalDate decisionDeadline; 
+
 
     // getters and setters
     public Long getOwnerId() { return ownerId; }
     public void setOwnerId(Long ownerId) { this.ownerId = ownerId; }
+
+    public String getOwnerName() { return ownerName; }
+    public void setOwnerName(String ownerName) { this.ownerName = ownerName; }
+
+    public LocalDate getDecisionDeadline() { return decisionDeadline; }
+    public void setDecisionDeadline(LocalDate decisionDeadline) { this.decisionDeadline = decisionDeadline; }
+
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }

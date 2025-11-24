@@ -1,5 +1,6 @@
 package com.osi.shramsaathi.model;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Entity;
@@ -29,8 +30,10 @@ public class Job {
     private String state;
     private Double latitude;
     private Double longitude;
+      private String ownerName;    
 
     private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDate decisionDeadline;
 
     // Getters and Setters
     public Long getId() {
@@ -39,6 +42,8 @@ public class Job {
     public void setId(Long id) {
         this.id = id;
     }
+    public String getOwnerName() { return ownerName; }
+    public void setOwnerName(String ownerName) { this.ownerName = ownerName; }
 
     public Long getOwnerId() {
         return ownerId;
@@ -143,4 +148,6 @@ public class Job {
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
+     public LocalDate getDecisionDeadline() { return decisionDeadline; }
+    public void setDecisionDeadline(LocalDate decisionDeadline) { this.decisionDeadline = decisionDeadline; }
 }

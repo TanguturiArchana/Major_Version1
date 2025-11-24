@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.*;
 
 @RestController
@@ -95,15 +96,53 @@ public class JobApplicationController {
         return ResponseEntity.ok(response);
     }
 
-    // ✅ Update application status (Owner Action)
+       // ----------------------------------------------------------
+    // ⭐ UPDATED ACCEPT/REJECT ENDPOINT WITH DEADLINE CHECK
+    // ----------------------------------------------------------
     @PutMapping("/{id}/status")
-    public ResponseEntity<JobApplication> updateStatus(
-            @PathVariable Long id,
-            @RequestParam String status
-    ) {
-        JobApplication app = appRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Application not found"));
-        app.setStatus(status);
-        return ResponseEntity.ok(appRepo.save(app));
+public ResponseEntity<?> updateStatus(
+        @PathVariable Long id,
+        @RequestParam String status
+) {
+    JobApplication app = appRepo.findById(id)
+            .orElseThrow(() -> new RuntimeException("Application not found"));
+
+    Long jobId = app.getJobId();
+    Job job = jobRepo.findById(jobId)
+            .orElseThrow(() -> new RuntimeException("Job not found"));
+
+    // ---------------------------
+    // 🚨 Deadline as LocalDate
+    // ---------------------------
+    LocalDate deadline = job.getDecisionDeadline();
+    LocalDate today = LocalDate.now();
+
+    if (deadline != null && today.isAfter(deadline)) {
+
+    // 1️⃣ Auto reject all pending applications
+    List<JobApplication> allApps = appRepo.findByJobId(jobId);
+
+    for (JobApplication a : allApps) {
+        if (a.getStatus().equalsIgnoreCase("PENDING")) {
+            a.setStatus("REJECTED");
+            appRepo.save(a);
+        }
     }
+
+    // 2️⃣ Auto delete job (same as Owner clicking delete)
+    jobRepo.delete(job);
+
+    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+            .body("⛔ Deadline passed. Job was automatically closed and removed.");
+}
+
+
+    // ------------------------------------------------------------
+    // BEFORE deadline → normal ACCEPT/REJECT
+    // ------------------------------------------------------------
+    app.setStatus(status.toUpperCase());
+    JobApplication saved = appRepo.save(app);
+
+    return ResponseEntity.ok(saved);
+}
 }
