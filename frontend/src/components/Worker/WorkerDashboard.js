@@ -6,7 +6,7 @@ import RouteMap from "./RouteMap";
 import "./WorkerDashboard.css";
 import { useLocation, useNavigate } from "react-router-dom";
 
-const API_BASE = "http://localhost:8083/api";
+const API_BASE = "https://shramsaathibackend.onrender.com/api";
 
 const WorkerDashboard = () => {
    const location = useLocation();
