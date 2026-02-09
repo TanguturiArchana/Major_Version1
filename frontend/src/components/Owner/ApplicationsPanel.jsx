@@ -4,7 +4,7 @@ import "./ApplicationsPanel.css";
 import Chat from "./Chat";
 import { useOutletContext } from "react-router-dom";
 
-const API_BASE = "http://localhost:8083/api";
+const API_BASE = "https://shramsaathibackend.onrender.com/api";
 
 
 const ApplicationsPanel = () => {
