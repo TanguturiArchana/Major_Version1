@@ -33,7 +33,7 @@ const WorkerProfile = () => {
     const fetchOwner = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:8083/api/users/profile/${state.id}`
+          `https://shramsaathibackend.onrender.com/api/users/profile/${state.id}`
         );
         setWorker(res.data);
       } catch (err) {
@@ -58,7 +58,7 @@ const WorkerProfile = () => {
     }
 
     try {
-      await axios.put(`http://localhost:8083/api/users/change-password/${state.id}`, {
+      await axios.put(`https://shramsaathibackend.onrender.com/api/users/change-password/${state.id}`, {
         oldPassword,
         newPassword,
       });
@@ -249,7 +249,7 @@ const WorkerProfile = () => {
         onClick={async () => {
           try {
             const res = await axios.put(
-              `http://localhost:8083/api/owners/update-field/${state.id}?field=${selectedField}&value=${newValue}`
+              `https://shramsaathibackend.onrender.com/api/owners/update-field/${state.id}?field=${selectedField}&value=${newValue}`
             );
             setWorker(res.data);
             alert("Updated successfully!");
