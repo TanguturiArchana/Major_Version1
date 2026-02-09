@@ -8,7 +8,7 @@ const LoginPopup = ({ onClose,name ,phone,isAfterWorkerRegister }) => {
   const [password, setPassword] = useState("");
   const nav=useNavigate();
   async function getWorkerId(name, phone) {
-  const res = await axios.get(`http://localhost:8083/api/users/findWorker`, {
+  const res = await axios.get(`https://shramsaathibackend.onrender.com/api/users/findWorker`, {
     params: { name, phone }
   });
   return res.data.id;
@@ -29,7 +29,7 @@ const LoginPopup = ({ onClose,name ,phone,isAfterWorkerRegister }) => {
 
       }
       else{
-        const res = await axios.get(`http://localhost:8083/api/users/findByNameAndPassword`, {
+        const res = await axios.get(`https://shramsaathibackend.onrender.com/api/users/findByNameAndPassword`, {
            params: { name: username, password } 
         });
         const id=res.data.id;
