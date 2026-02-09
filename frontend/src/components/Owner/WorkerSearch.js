@@ -2,7 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import "./WorkerSearch.css";
 
-const API_BASE = "http://localhost:8083/api";
+const API_BASE = "https://shramsaathibackend.onrender.com/api";
 
 const WorkerSearch = () => {
   const [workers, setWorkers] = useState([]);
