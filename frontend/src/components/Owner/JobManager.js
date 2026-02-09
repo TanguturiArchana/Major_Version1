@@ -7,7 +7,7 @@ import AddJobModal from "./AddJobModal";
 import "./JobManager.css";
 import OwnerHeader from "./OwnerHeader";
 import axios from "axios";
-const API_BASE = "http://localhost:8083/api";
+const API_BASE = "https://shramsaathibackend.onrender.com/api";
 
 const JobManager = () => {
   const [jobs, setJobs] = useState([]);
