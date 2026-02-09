@@ -9,7 +9,7 @@ const Opening = () => {
 
   useEffect(() => {
 
-    fetch("http://localhost:8083/api/jobs/recent")
+    fetch("https://shramsaathibackend.onrender.com/api/jobs/recent")
       .then(res => res.json())
       .then(data => setJobs(data))
       .catch(err => console.error(err));
