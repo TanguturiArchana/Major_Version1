@@ -8,7 +8,7 @@ const OwnerLoginPopup = ({ onClose,name ,phone,isAfterRegister}) => {
   const [password, setPassword] = useState("");
   const nav=useNavigate();
    async function getOwnerId(name, phone) {
-    const res = await axios.get(`http://localhost:8083/api/owners/find`, {
+    const res = await axios.get(`https://shramsaathibackend.onrender.com/api/owners/find`, {
       params: { name, phone }
     });
     return res.data.id;
@@ -25,7 +25,7 @@ const OwnerLoginPopup = ({ onClose,name ,phone,isAfterRegister}) => {
         nav("/ownerDashboard",{state:{id}});
       }
       else{
-        const res = await axios.get(`http://localhost:8083/api/owners/findByNameAndPassword`, {
+        const res = await axios.get(`https://shramsaathibackend.onrender.com/api/owners/findByNameAndPassword`, {
            params: { name: username, password } 
         });
         const id=res.data.id;
