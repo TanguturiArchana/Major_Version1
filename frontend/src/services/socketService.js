@@ -13,7 +13,7 @@ export function connect() {
       // suppress verbose logging in prod
     },
     reconnectDelay: 5000,
-    webSocketFactory: () => new SockJS('http://localhost:8083/ws'),
+    webSocketFactory: () => new SockJS('https://shramsaathibackend.onrender.com/ws'),
     onStompError: (frame) => {
       console.error('Broker reported error: ' + (frame.headers && frame.headers['message']));
     },
