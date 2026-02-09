@@ -31,7 +31,7 @@ const OwnerProfile = () => {
     const fetchOwner = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:8083/api/owners/profile/${state.id}`
+          `https://shramsaathibackend.onrender.com/api/owners/profile/${state.id}`
         );
         setOwner(res.data);
       } catch (err) {
@@ -56,7 +56,7 @@ const OwnerProfile = () => {
     }
 
     try {
-      await axios.put(`http://localhost:8083/api/owners/change-password/${state.id}`, {
+      await axios.put(`https://shramsaathibackend.onrender.com/api/owners/change-password/${state.id}`, {
         oldPassword,
         newPassword,
       });
@@ -246,7 +246,7 @@ const OwnerProfile = () => {
         onClick={async () => {
           try {
             const res = await axios.put(
-              `http://localhost:8083/api/owners/update-field/${state.id}?field=${selectedField}&value=${newValue}`
+              `https://shramsaathibackend.onrender.com/api/owners/update-field/${state.id}?field=${selectedField}&value=${newValue}`
             );
             setOwner(res.data);
             alert("Updated successfully!");
