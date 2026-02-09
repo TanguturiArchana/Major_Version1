@@ -29,7 +29,7 @@ const AddJobModal = ({ closeModal, onJobAdded ,id}) => {
     e.preventDefault();
     try {
       const payload = { ...form };
-      await axios.get(`http://localhost:8083/api/jobs/owner/${id}`)
+      await axios.get(`https://shramsaathibackend.onrender.com/api/jobs/owner/${id}`)
       .then(res => console.log(res.data))
       .catch(err => console.log(err));
 
