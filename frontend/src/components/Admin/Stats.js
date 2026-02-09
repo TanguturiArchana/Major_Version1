@@ -8,7 +8,7 @@ const Stats = () => {
 
   useEffect(() => {
 
-    axios.get("http://localhost:8083/api/stats")
+    axios.get("https://shramsaathibackend.onrender.com/api/stats")
       .then(res => {
 
         setData([
