@@ -1,7 +1,7 @@
 import axios from "axios";
 import { send } from "./socketService";
 
-const API_BASE = "http://localhost:8083/api/chat";
+const API_BASE = "https://shramsaathibackend.onrender.com/api/chat";
 
 export const chatService = {
   sendMessage: async (messageData) => {
