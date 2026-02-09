@@ -7,7 +7,7 @@ const Chat = ({ applicationId, ownerId, workerId, onClose }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
 
-  // ✅ Fetch messages initially
+  // Fetch messages initially
   useEffect(() => {
     const fetch = async () => {
       const data = await chatService.getMessages(applicationId);
@@ -27,7 +27,7 @@ const Chat = ({ applicationId, ownerId, workerId, onClose }) => {
     return () => sub.unsubscribe();
   }, [applicationId]);
 
-  // ✅ Send new message
+  //  Send new message
   const handleSend = async (e) => {
     e.preventDefault();
     if (!newMessage.trim()) return;

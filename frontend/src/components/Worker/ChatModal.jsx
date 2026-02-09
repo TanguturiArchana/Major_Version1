@@ -26,7 +26,7 @@ const ChatModal = ({ applicationId, workerId, ownerId, onClose }) => {
     return () => sub.unsubscribe();
   }, [applicationId]);
 
-  // ✅ Send new message
+  //  Send new message
   const handleSend = async (e) => {
     e.preventDefault();
     if (!newMessage.trim()) return;

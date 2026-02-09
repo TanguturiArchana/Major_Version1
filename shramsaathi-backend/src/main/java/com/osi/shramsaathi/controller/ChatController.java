@@ -17,14 +17,13 @@ public class ChatController {
     public ChatController(ChatRepository chatRepo) {
         this.chatRepo = chatRepo;
     }
-
-    // ✅ Send a message
+    // Send a message
     @PostMapping
     public ResponseEntity<ChatMessage> sendMessage(@RequestBody ChatMessage message) {
         return ResponseEntity.ok(chatRepo.save(message));
     }
 
-    // ✅ Fetch all messages for an application (both worker & owner)
+    // Fetch all messages for an application (both worker & owner)
     @GetMapping("/{applicationId}")
     public ResponseEntity<List<ChatMessage>> getMessagesByApplication(@PathVariable Long applicationId) {
         return ResponseEntity.ok(chatRepo.findByApplicationIdOrderBySentAtAsc(applicationId));

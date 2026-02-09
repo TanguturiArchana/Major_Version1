@@ -3,6 +3,7 @@ package com.osi.shramsaathi.repository;
 import com.osi.shramsaathi.model.Job;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 @Repository
@@ -14,4 +15,9 @@ public interface JobRepository extends JpaRepository<Job, Long> {
     List<Job> findBySkillNeededContainingIgnoreCase(String skillNeeded);
 
     List<Job> findByStatus(String status);
+
+    @Query(value = "SELECT COUNT(*) FROM jobs WHERE decision_deadline >= CURDATE()", nativeQuery = true)
+    long countActiveJobs();
+
+    List<Job> findTop3ByOrderByCreatedAtDesc();
 }

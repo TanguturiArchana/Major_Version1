@@ -1,3 +1,4 @@
 node_modules/ 
 /target 
 .env 
+shramsaathi-backend/src/main/resources/application.properties

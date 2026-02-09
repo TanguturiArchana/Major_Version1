@@ -34,6 +34,6 @@ public class OwnerRequest {
     @NotNull(message = "Pincode is required")
     private Integer pincode;
     
-    private String password; // Add password field
+    private String password; 
     
 }

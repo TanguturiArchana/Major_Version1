@@ -65,7 +65,7 @@ public class UserController {
         return ResponseEntity.ok(result);
     }
 
-    /** ⭐ FIX ADDED — Get user by ID */
+    
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getUserById(id));

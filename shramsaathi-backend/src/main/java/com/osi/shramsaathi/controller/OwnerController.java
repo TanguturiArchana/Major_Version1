@@ -76,11 +76,5 @@ public class OwnerController  {
         return ResponseEntity.ok(ownerService.getAllOwnerResponses());
     }
 
-    /** Search users by work type and district */
-    // @GetMapping("/search")
-    // public ResponseEntity<List<OwnerResponse>> search(
-    //         @RequestParam String workType,
-    //         @RequestParam String district) {
-    //     return ResponseEntity.ok(ownerService.findByWorkTypeAndDistrict(workType, district));
-    // }
+    
 }

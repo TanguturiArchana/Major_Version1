@@ -31,22 +31,21 @@ const Analytics = () => {
     fetchJobs();
   }, []);
 
-  // ✅ Handle empty data safely
+
   if (!Array.isArray(jobs) || jobs.length === 0) {
     return (
       <div className="analytics-container">
-        <h2>📊 ShramSaathi Analytics Dashboard</h2>
+        <h2> ShramSaathi Analytics Dashboard</h2>
         <p>No jobs data available yet.</p>
       </div>
     );
   }
 
-  // ✅ Basic metrics
+
   const totalJobs = jobs.length;
   const activeJobs = jobs.filter((j) => j.status?.toLowerCase() === "active").length;
   const completedJobs = jobs.filter((j) => j.status?.toLowerCase() === "completed").length;
 
-  // ✅ Pie Chart: Jobs by Skill
   const jobsBySkill = Object.values(
     jobs.reduce((acc, job) => {
       const skill = job.skillNeeded || "Other";
@@ -56,13 +55,12 @@ const Analytics = () => {
     }, {})
   );
 
-  // ✅ Bar Chart: Pay by Skill
   const payData = Object.values(
     jobs.reduce((acc, job) => {
       const skill = job.skillNeeded || "Other";
       let payValue = 0;
 
-      // Safe parse — works for both string or number
+
       if (typeof job.pay === "string") {
         payValue = parseFloat(job.pay.replace(/[^\d.]/g, "")) || 0;
       } else if (typeof job.pay === "number") {
@@ -77,7 +75,7 @@ const Analytics = () => {
 
   return (
     <div className="analytics-container">
-      <h2>📊 ShramSaathi Analytics Dashboard</h2>
+      <h2>ShramSaathi Analytics Dashboard</h2>
       <p className="subtitle">Track job trends, wages, and skill demand</p>
 
       {/* Overview Cards */}

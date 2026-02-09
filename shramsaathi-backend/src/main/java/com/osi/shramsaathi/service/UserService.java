@@ -15,8 +15,5 @@ public interface UserService {
     UserResponse findByNameAndPassword(String name, String password);
     User updateField(Long id, String field, String value);
     String changePassword(Long id, String oldPassword, String newPassword);
-
-;
-    /** ⭐ FIX ADDED */
     UserResponse getUserById(Long id);
 }

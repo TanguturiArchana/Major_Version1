@@ -40,6 +40,3 @@ public class UserRequest {
     private Integer experienceYears;
     private String password; // Add password field
 }
-// This is the UserRequest class, which is used to create a new user.
-// It uses Lombok to generate the getters, setters, constructor, and builder methods.
-// It also uses JSR 380 (Bean Validation) annotations to validate the input fields. 

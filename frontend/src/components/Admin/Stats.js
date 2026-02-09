@@ -1,13 +1,27 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "./Stats.css";
+import axios from "axios";
 
 const Stats = () => {
-  const data = [
-    { label: "Total no. of owners registered", value: "20" },
-    { label: "Total no. of workers registered", value: "140" },
-    { label: "Total jobs posted", value: "60" },
-    { label: "Total Active Jobs", value: "45" },
-  ];
+
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+
+    axios.get("http://localhost:8083/api/stats")
+      .then(res => {
+
+        setData([
+          { label: "Total no. of owners registered", value: res.data.totalOwners },
+          { label: "Total no. of workers registered", value: res.data.totalWorkers },
+          { label: "Total jobs posted", value: res.data.totalJobs },
+          { label: "Total Active Jobs", value: res.data.activeJobs }
+        ]);
+
+      })
+      .catch(err => console.error(err));
+
+  }, []);
 
   return (
     <section className="stats-section">

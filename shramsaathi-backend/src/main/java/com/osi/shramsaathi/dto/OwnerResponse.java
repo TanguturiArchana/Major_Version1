@@ -18,6 +18,3 @@ public class OwnerResponse {
     private Integer pincode;
     private Boolean registered;
 }
-// This is the UserResponse class, which is used to send the user data to the client.
-// It uses Lombok to generate the getters, setters, constructor, and builder methods.
-    

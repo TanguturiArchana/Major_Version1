@@ -5,6 +5,7 @@ import com.osi.shramsaathi.dto.JobResponse;
 import com.osi.shramsaathi.service.JobService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.osi.shramsaathi.model.Job;
 
 import java.util.List;
 
@@ -19,31 +20,37 @@ public class JobController {
         this.jobService = jobService;
     }
 
-    // ✅ GET all jobs (used by Analytics / Worker dashboard)
+    //  GET all jobs (used by Analytics / Worker dashboard)
     @GetMapping
     public ResponseEntity<List<JobResponse>> getAllJobs() {
         List<JobResponse> jobs = jobService.getAllJobs();
         return ResponseEntity.ok(jobs);
     }
 
-    // ✅ NEW: Get jobs by owner ID (used in Owner Dashboard)
+    //  NEW: Get jobs by owner ID (used in Owner Dashboard)
     @GetMapping("/owner/{ownerId}")
     public ResponseEntity<List<JobResponse>> getJobsByOwner(@PathVariable Long ownerId) {
         List<JobResponse> jobs = jobService.getJobsByOwner(ownerId);
         return ResponseEntity.ok(jobs);
     }
 
-    // ✅ POST: Create new job
+    //  POST: Create new job
     @PostMapping
     public ResponseEntity<JobResponse> createJob(@RequestBody JobRequest jobRequest) {
         JobResponse job = jobService.createJob(jobRequest);
         return ResponseEntity.ok(job);
     }
 
-    // ✅ DELETE: Delete job by ID
+    //  DELETE: Delete job by ID
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteJob(@PathVariable Long id) {
         jobService.deleteJob(id);
         return ResponseEntity.noContent().build();
     }
+
+     @GetMapping("/recent")
+public List<JobResponse> getRecentJobs() {
+    return jobService.getRecentJobs();
+}
+
 }

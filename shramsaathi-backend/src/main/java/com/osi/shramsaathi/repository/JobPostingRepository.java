@@ -1,4 +1,4 @@
-// src/main/java/com/osi/shramsaathi/repository/JobPostingRepository.java
+
 
 package com.osi.shramsaathi.repository;
 

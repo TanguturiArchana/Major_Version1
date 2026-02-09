@@ -61,7 +61,7 @@ public class UserServiceImpl implements UserService {
                 .toList();
     }
 
-    /** ⭐ FIX ADDED — Fetch user by ID */
+  
     @Override
     public UserResponse getUserById(Long id) {
         User user = userRepository.findById(id)

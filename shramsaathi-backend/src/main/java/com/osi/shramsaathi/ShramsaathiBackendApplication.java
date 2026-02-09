@@ -11,8 +11,3 @@ public class ShramsaathiBackendApplication {
 	}
 
 }
-// This is the main class for the Shramsaathi backend application.
-// It uses Spring Boot to initialize the application context and start the embedded server.
-// The application is configured to use the @SpringBootApplication annotation, which enables auto-configuration, component scanning, and a host of other features.
-// The main method is the entry point for the application, and it starts the embedded server.
-// The application is configured to use the @SpringBootApplication annotation, which enables auto-configuration, component scanning, and a host of other features.

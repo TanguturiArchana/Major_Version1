@@ -182,5 +182,24 @@ public class JobServiceImpl implements JobService {
                 .map(this::map)
                 .collect(Collectors.toList());
     }
+ 
+@Override
+public List<JobResponse> getRecentJobs() {
+
+    return jobRepository.findTop3ByOrderByCreatedAtDesc()
+            .stream()
+            .map(job -> {
+                JobResponse r = new JobResponse();
+
+                r.setId(job.getId());
+                r.setTitle(job.getTitle());
+                r.setLocation(job.getLocation());
+                r.setPay(job.getPay());
+
+                return r;
+            })
+            .collect(Collectors.toList());
+}
+
 
 }

@@ -19,7 +19,6 @@ const WorkerDashboard = () => {
       skill: "",
       location: "",
       contact: "",
-      // worker pincode (used to geocode worker origin). Replace with real data for logged-in user.
       area: "",
       colony: "",
     state: "",
@@ -114,7 +113,7 @@ useEffect(() => {
     }
   };
 
-  // ✅ Fetch all jobs and enrich with owner information
+  //  Fetch all jobs and enrich with owner information
   const fetchJobs = async () => {
     try {
       const jobsRes = await axios.get(`${API_BASE}/jobs`);
@@ -160,7 +159,7 @@ useEffect(() => {
     if (workerId) fetchJobs();
   }, [workerId]);
 
-  // ✅ Fetch worker applications with full owner information
+  // Fetch worker applications with full owner information
   const fetchApplications = async () => {
     try {
       const [applicationsRes, jobsRes] = await Promise.all([
@@ -210,7 +209,7 @@ useEffect(() => {
     }
   }, [activeTab]);
 
-  // ✅ Apply for a job (protected against duplicates)
+  // Apply for a job (protected against duplicates)
   const handleApply = async (job) => {
     try {
       

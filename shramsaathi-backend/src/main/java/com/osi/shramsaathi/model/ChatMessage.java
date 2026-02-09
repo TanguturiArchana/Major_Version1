@@ -17,9 +17,9 @@ public class ChatMessage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long senderId;    // user id who sent (worker or owner)
-    private Long receiverId;  // other party id
-    private Long applicationId; // link to a JobApplication (optional but recommended)
+    private Long senderId;   
+    private Long receiverId; 
+    private Long applicationId; 
     @Column(columnDefinition = "TEXT")
     private String message;
 

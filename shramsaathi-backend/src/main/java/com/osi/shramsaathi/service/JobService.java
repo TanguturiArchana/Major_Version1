@@ -3,6 +3,7 @@ package com.osi.shramsaathi.service;
 import com.osi.shramsaathi.dto.JobRequest;
 import com.osi.shramsaathi.dto.JobResponse;
 import java.util.List;
+import com.osi.shramsaathi.model.Job;
 
 public interface JobService {
     JobResponse createJob(JobRequest request);
@@ -12,6 +13,6 @@ public interface JobService {
     List<JobResponse> getJobsByOwner(Long ownerId);
     List<JobResponse> searchBySkill(String skill);
     
-    // ✅ Add this line
     List<JobResponse> getAllJobs();
+     List<JobResponse> getRecentJobs();
 }

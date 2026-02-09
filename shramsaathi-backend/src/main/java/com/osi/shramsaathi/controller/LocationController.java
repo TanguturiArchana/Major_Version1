@@ -35,6 +35,6 @@ public class LocationController {
             this.timestamp = timestamp;
         }
 
-        // getters/setters if needed
+        
     }
 }

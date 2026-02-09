@@ -30,10 +30,10 @@ public class JobApplicationController {
         this.jobpostServ=jobpostServ;
     }
 
-    // ✅ Worker applies for a job (Prevent duplicate applications)
+    //  Worker applies for a job (Prevent duplicate applications)
     @PostMapping
     public ResponseEntity<?> applyForJob(@RequestBody JobApplication application) {
-        // 🚫 Check if worker already applied for this job
+        //  Check if worker already applied for this job
         Optional<JobApplication> existing = appRepo.findByJobIdAndWorkerId(application.getJobId(), application.getWorkerId());
 
         if (existing.isPresent()) {
@@ -43,7 +43,7 @@ public class JobApplicationController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
         }
 
-        // ✅ Save new application
+        //  Save new application
         JobApplication saved = appRepo.save(application);
         Map<String, Object> response = new HashMap<>();
         response.put("message", "✅ Job application submitted successfully!");
@@ -51,7 +51,7 @@ public class JobApplicationController {
         return ResponseEntity.ok(response);
     }
 
-    // ✅ Get all applications for a specific job (Owner View)
+    //  Get all applications for a specific job (Owner View)
     @GetMapping("/job/{jobId}")
     public ResponseEntity<List<JobApplication>> getApplicationsByJob(@PathVariable Long jobId) {
         return ResponseEntity.ok(appRepo.findByJobId(jobId));
@@ -62,7 +62,7 @@ public class JobApplicationController {
     }
 
 
-    // ✅ Get all applications made by a specific worker (Worker View)
+    // Get all applications made by a specific worker (Worker View)
     @GetMapping("/worker/{workerId}")
     public ResponseEntity<List<Map<String, Object>>> getApplicationsByWorker(@PathVariable Long workerId) {
         List<JobApplication> apps = appRepo.findByWorkerId(workerId);
@@ -78,7 +78,7 @@ public class JobApplicationController {
             map.put("appliedAt", app.getAppliedAt());
             map.put("jobId", app.getJobId());
 
-            // ✅ Fetch job details
+            // Fetch job details
             jobRepo.findById(app.getJobId()).ifPresentOrElse(job -> {
                 map.put("jobTitle", job.getTitle());
                 map.put("location", job.getLocation());
@@ -96,9 +96,7 @@ public class JobApplicationController {
         return ResponseEntity.ok(response);
     }
 
-       // ----------------------------------------------------------
-    // ⭐ UPDATED ACCEPT/REJECT ENDPOINT WITH DEADLINE CHECK
-    // ----------------------------------------------------------
+     
     @PutMapping("/{id}/status")
 public ResponseEntity<?> updateStatus(
         @PathVariable Long id,
@@ -111,15 +109,13 @@ public ResponseEntity<?> updateStatus(
     Job job = jobRepo.findById(jobId)
             .orElseThrow(() -> new RuntimeException("Job not found"));
 
-    // ---------------------------
-    // 🚨 Deadline as LocalDate
-    // ---------------------------
+  
     LocalDate deadline = job.getDecisionDeadline();
     LocalDate today = LocalDate.now();
 
     if (deadline != null && today.isAfter(deadline)) {
 
-    // 1️⃣ Auto reject all pending applications
+    //  Auto reject all pending applications
     List<JobApplication> allApps = appRepo.findByJobId(jobId);
 
     for (JobApplication a : allApps) {
@@ -129,7 +125,7 @@ public ResponseEntity<?> updateStatus(
         }
     }
 
-    // 2️⃣ Auto delete job (same as Owner clicking delete)
+    //  Auto delete job (same as Owner clicking delete)
     jobRepo.delete(job);
 
     return ResponseEntity.status(HttpStatus.FORBIDDEN)
@@ -137,9 +133,6 @@ public ResponseEntity<?> updateStatus(
 }
 
 
-    // ------------------------------------------------------------
-    // BEFORE deadline → normal ACCEPT/REJECT
-    // ------------------------------------------------------------
     app.setStatus(status.toUpperCase());
     JobApplication saved = appRepo.save(app);
 
