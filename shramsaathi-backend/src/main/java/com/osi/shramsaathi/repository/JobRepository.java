@@ -16,8 +16,9 @@ public interface JobRepository extends JpaRepository<Job, Long> {
 
     List<Job> findByStatus(String status);
 
-    @Query(value = "SELECT COUNT(*) FROM jobs WHERE decision_deadline >= CURDATE()", nativeQuery = true)
+    @Query("SELECT COUNT(j) FROM Job j WHERE j.decisionDeadline >= CURRENT_DATE")
     long countActiveJobs();
+
 
     List<Job> findTop3ByOrderByCreatedAtDesc();
 }
