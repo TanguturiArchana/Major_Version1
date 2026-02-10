@@ -16,9 +16,9 @@ public class SecurityConfig {
 
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                    "/",          // ✅ REQUIRED for Render health check
-                    "/api/**",    // your APIs
-                    "/ws/**"      // websocket (if used)
+                    "/",          
+                    "/api/**",    
+                    "/ws/**"      
                 ).permitAll()
                 .anyRequest().authenticated()
             );
