@@ -7,14 +7,11 @@ import java.util.List;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.osi.shramsaathi.dto.OwnerResponse;
 import com.osi.shramsaathi.dto.UserRequest;
 import com.osi.shramsaathi.dto.UserResponse;
-import com.osi.shramsaathi.model.Owner;
 import com.osi.shramsaathi.model.User;
 import com.osi.shramsaathi.repository.UserRepository;
 import com.osi.shramsaathi.service.UserService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import lombok.RequiredArgsConstructor;
 
@@ -45,7 +42,7 @@ public class UserServiceImpl implements UserService {
                 .state(request.getState())
                 .age(request.getAge())
                 .experienceYears(request.getExperienceYears())
-                .password(password)
+                .password(passwordEncoder.encode(password))
                 .registered(true)
                 .build();
 

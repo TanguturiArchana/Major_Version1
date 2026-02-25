@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import "./OwnerLayout.css";
 
@@ -25,6 +25,7 @@ const OwnerLayout = () => {
   const menuItems = [
     { name: "Job Manager", path: "/owner/jobs", icon: "💼" },
     { name: "Analytics", path: "/owner/analytics", icon: "📊" },
+    { name: "Job Reactions", path: "/owner/engagement", icon: "🔥" },
     { name: "Applications", path: "/owner/applications", icon: "📩" },
     { name: "Profile", path: "/owner/profile", icon: "👤" },
   ];

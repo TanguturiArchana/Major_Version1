@@ -8,7 +8,6 @@ import com.osi.shramsaathi.service.StatsService;
 
 @RestController
 @RequestMapping("/api/stats")
-@CrossOrigin
 public class StatsController {
 
     @Autowired

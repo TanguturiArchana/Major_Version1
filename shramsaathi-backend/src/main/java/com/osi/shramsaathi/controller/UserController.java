@@ -1,15 +1,14 @@
 
 package com.osi.shramsaathi.controller;
 
-import com.osi.shramsaathi.dto.OwnerResponse;
 import com.osi.shramsaathi.dto.UserRequest;
 import com.osi.shramsaathi.dto.UserResponse;
+import com.osi.shramsaathi.model.User;
 import com.osi.shramsaathi.service.UserService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,6 +28,16 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    @PutMapping("/update-field/{id}")
+    public ResponseEntity<User> updateField(
+            @PathVariable Long id,
+            @RequestParam String field,
+            @RequestParam String value
+    ) {
+        User updated = userService.updateField(id, field, value);
+        return ResponseEntity.ok(updated);
+    }
+
     /** Get all users */
     @GetMapping
     public ResponseEntity<List<UserResponse>> all() {
@@ -44,15 +53,9 @@ public class UserController {
         return ResponseEntity.ok(userService.findByNameAndPhone(name, phone));
     }
      @GetMapping("/profile/{id}")
-    public ResponseEntity<?> getWorkerProfile(@PathVariable Long id) {
-        try {
-            UserResponse response = userService.getUserById(id);
-            
-            return ResponseEntity.ok(response);
-        } 
-        catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Worker not found"+id);
-        }
+    public ResponseEntity<UserResponse> getWorkerProfile(@PathVariable Long id) {
+        UserResponse response = userService.getUserById(id);
+        return ResponseEntity.ok(response);
     }
     @PutMapping("/change-password/{id}")
     public ResponseEntity<String> changePassword(@PathVariable Long id,@RequestBody Map<String, String> req) {

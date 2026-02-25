@@ -8,7 +8,6 @@ import com.osi.shramsaathi.service.OwnerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,15 +36,9 @@ public class OwnerController  {
     }
 
    @GetMapping("/profile/{id}")
-    public ResponseEntity<?> getOwnerProfile(@PathVariable Long id) {
-        try {
-            OwnerResponse response = ownerService.getOwnerById(id);
-            
-            return ResponseEntity.ok(response);
-        } 
-        catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Owner not found"+id);
-        }
+    public ResponseEntity<OwnerResponse> getOwnerProfile(@PathVariable Long id) {
+        OwnerResponse response = ownerService.getOwnerById(id);
+        return ResponseEntity.ok(response);
     }
     @PutMapping("/change-password/{id}")
     public ResponseEntity<String> changePassword(@PathVariable Long id,@RequestBody Map<String, String> req) {

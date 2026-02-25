@@ -1,7 +1,8 @@
 import axios from "axios";
 import { send } from "./socketService";
+import { API_BASE_URL } from "../config/environment";
 
-const API_BASE = "https://shramsaathibackend.onrender.com/api/chat";
+const API_BASE = `${API_BASE_URL}/chat`;
 
 export const chatService = {
   sendMessage: async (messageData) => {

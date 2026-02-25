@@ -7,9 +7,11 @@ import org.springframework.stereotype.Controller;
 import com.osi.shramsaathi.model.ChatMessage;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Controller
 @RequiredArgsConstructor
+@Slf4j
 public class ChatWebSocketController {
 
     private final SimpMessagingTemplate messagingTemplate;
@@ -22,7 +24,7 @@ public class ChatWebSocketController {
             messagingTemplate.convertAndSend("/topic/chat/" + message.getApplicationId(), message);
         } catch (Exception e) {
             // log and ignore
-            System.err.println("Failed to broadcast chat message: " + e.getMessage());
+            log.error("Failed to broadcast chat message", e);
         }
     }
 }

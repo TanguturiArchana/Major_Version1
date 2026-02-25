@@ -1,17 +1,16 @@
 import axios from "axios";
-
-const API_BASE = "https://shramsaathibackend.onrender.com/api";
+import { API_BASE_URL } from "../config/environment";
 
 export const workerService = {
   // Get all workers
   getAllWorkers: async () => {
-    const res = await axios.get(`${API_BASE}/users`);
+    const res = await axios.get(`${API_BASE_URL}/users`);
     return res.data;
   },
 
   // Get worker by ID
   getWorkerById: async (id) => {
-    const res = await axios.get(`${API_BASE}/users/${id}`);
+    const res = await axios.get(`${API_BASE_URL}/users/${id}`);
     return res.data;
   },
 };

@@ -13,7 +13,9 @@ const Navbar = () => {
 
       <div className="navbar-left">
         <img src={logo} alt="Shramsaathi Logo" className="navbar-logo" />
-        <h1 className="navbar-title">Shramsaathi</h1>
+        <div>
+          <h1 className="navbar-title">Shramsaathi</h1>
+        </div>
       </div>
 
       <div className="navbar-buttons">

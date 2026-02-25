@@ -1,0 +1,107 @@
+.engagement-hub {
+  padding: 1rem;
+  background: linear-gradient(120deg, #f0f9ff 0%, #fdf2f8 50%, #ecfeff 100%);
+  border-radius: 18px;
+}
+
+.hub-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.hub-header h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 1.6rem;
+}
+
+.refresh-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 0.55rem 0.95rem;
+  font-weight: 700;
+  color: white;
+  background: linear-gradient(135deg, #0284c7, #7c3aed);
+  cursor: pointer;
+}
+
+.hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.hub-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 1rem;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+.hub-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.hub-title-row h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #111827;
+}
+
+.owner-chip {
+  font-size: 0.78rem;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+}
+
+.metrics-row {
+  display: flex;
+  gap: 0.6rem;
+  margin: 0.8rem 0;
+}
+
+.metric {
+  padding: 0.45rem 0.6rem;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.metric.likes {
+  background: #fff1f2;
+  color: #be123c;
+}
+
+.metric.comments {
+  background: #eef2ff;
+  color: #4338ca;
+}
+
+.latest-comment .preview {
+  margin: 0;
+  color: #334155;
+}
+
+.latest-comment .meta {
+  margin: 0.35rem 0 0 0;
+  color: #64748b;
+  font-size: 0.82rem;
+}
+
+.muted {
+  color: #94a3b8;
+}
+
+.loading-text {
+  color: #334155;
+  font-weight: 600;
+}

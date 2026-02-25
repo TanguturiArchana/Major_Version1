@@ -1,5 +1,6 @@
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
+import { WS_BASE_URL } from "../config/environment";
 
 let client = null;
 let pendingSubscriptions = [];
@@ -13,7 +14,7 @@ export function connect() {
       // suppress verbose logging in prod
     },
     reconnectDelay: 5000,
-    webSocketFactory: () => new SockJS('https://shramsaathibackend.onrender.com/ws'),
+    webSocketFactory: () => new SockJS(`${WS_BASE_URL}/ws`),
     onStompError: (frame) => {
       console.error('Broker reported error: ' + (frame.headers && frame.headers['message']));
     },

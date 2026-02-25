@@ -5,8 +5,12 @@ import ChatModal from "./ChatModal";
 import RouteMap from "./RouteMap";
 import "./WorkerDashboard.css";
 import { useLocation, useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../../config/environment";
+import WorkerNotifications from "./WorkerNotifications";
+import WorkerSkillTest from "./WorkerSkillTest";
+import API from "../../services/api";
 
-const API_BASE = "https://shramsaathibackend.onrender.com/api";
+const API_BASE = API_BASE_URL;
 
 const WorkerDashboard = () => {
    const location = useLocation();
@@ -14,9 +18,10 @@ const WorkerDashboard = () => {
     const [workerId, setWorkerId] = useState(null);
     const [jobs, setJobs] = useState([]);
     const [applications, setApplications] = useState([]);
-    const [workerProfile, setWorkerProfile] = useState({
+  const [workerProfile, setWorkerProfile] = useState({
       name: "",
       skill: "",
+      workType: "",
       location: "",
       contact: "",
       area: "",
@@ -28,7 +33,7 @@ const WorkerDashboard = () => {
   });
 
   const [activeTab, setActiveTab] = useState("jobs");
-  const [appliedJobs, setAppliedJobs] = useState(new Set());
+  const [, setAppliedJobs] = useState(new Set());
   const [message, setMessage] = useState("");
   const [chatApplication, setChatApplication] = useState(null);
   const [routeTarget, setRouteTarget] = useState(null); // [lat, lng]
@@ -40,25 +45,69 @@ const WorkerDashboard = () => {
   const [routeKey, setRouteKey] = useState(null);
   const [isSharing, setIsSharing] = useState(false);
   const [watchId, setWatchId] = useState(null);
-  const [showPincodeModal, setShowPincodeModal] = useState(false);
-  const [modalPincode, setModalPincode] = useState("");
+  
+  // Real-time engagement features
+  const [jobLikes, setJobLikes] = useState({});
+  const [jobLikeCounts, setJobLikeCounts] = useState({});
+  const [jobComments, setJobComments] = useState({});
+  const [newJobComment, setNewJobComment] = useState({});
+  const [expandedJobComments, setExpandedJobComments] = useState({});
+
+  const extractApiErrorMessage = (err) => {
+    const data = err?.response?.data;
+    if (typeof data === "string") return data;
+    if (typeof data?.message === "string") return data.message;
+    return "";
+  };
   
 useEffect(() => {
   if (location.state) {
     // store in localStorage only once
-    localStorage.setItem("ownerState", JSON.stringify(location.state));
-    setWorkerId(location.state.id);
-    
+    localStorage.setItem("workerState", JSON.stringify(location.state));
+    const nextId = Number(location.state.id);
+    setWorkerId(Number.isFinite(nextId) ? nextId : null);
   }
 }, [location.state]);
 
 const state = location.state || JSON.parse(localStorage.getItem("workerState"));
 
 useEffect(() => {
+  if (!workerId && state?.id) {
+    const nextId = Number(state.id);
+    setWorkerId(Number.isFinite(nextId) ? nextId : null);
+  }
+}, [workerId, state]);
+
+useEffect(() => {
+  if (!workerId) return;
+  axios
+    .get(`${API_BASE}/users/${workerId}`)
+    .then((res) => {
+      const profile = res.data || {};
+      setWorkerProfile({
+        name: profile.name || "",
+        skill: profile.skill || profile.workType || "",
+        workType: profile.workType || profile.skill || "",
+        location: profile.address || profile.location || "",
+        contact: profile.phone || profile.contact || "",
+        area: profile.area || "",
+        colony: profile.colony || "",
+        state: profile.state || "",
+        pincode: profile.pincode || "",
+        age: profile.age || "",
+        experienceYears: profile.experienceYears || profile.experience || "",
+      });
+    })
+    .catch((err) => {
+      console.error("Failed to load worker profile:", err);
+    });
+}, [workerId]);
+
+useEffect(() => {
   if (!state) {
     navigate("/");
   }
-}, [state]);
+}, [state, navigate]);
 
 
 
@@ -116,13 +165,13 @@ useEffect(() => {
   //  Fetch all jobs and enrich with owner information
   const fetchJobs = async () => {
     try {
-      const jobsRes = await axios.get(`${API_BASE}/jobs`);
+      const jobsRes = await API.get(`/jobs`);
 
       // If workerId is known, fetch applications for this worker; otherwise assume none
       let applicationsRes = { data: [] };
       if (workerId) {
         try {
-          applicationsRes = await axios.get(`${API_BASE}/applications/worker/${workerId}`);
+          applicationsRes = await API.get(`/applications/worker/${workerId}`);
         } catch (e) {
           console.warn('Failed to fetch worker applications (will assume none):', e);
           applicationsRes = { data: [] };
@@ -141,6 +190,7 @@ useEffect(() => {
       }));
 
       setJobs(enrichedJobs);
+      await fetchEngagementForJobs(enrichedJobs.map((job) => job.id));
     } catch (err) {
       console.error('Failed to fetch jobs:', err);
       setMessage('⚠️ Failed to load jobs. Please try again.');
@@ -148,23 +198,44 @@ useEffect(() => {
     }
   };
 
-  useEffect(() => {
-    fetchJobs();
-    // connect websocket once
-    try { wsConnect(); } catch (e) {}
-  }, []);
+  const applyEngagementSnapshot = (snapshot) => {
+    if (!snapshot || !snapshot.jobId) return;
+    if (snapshot.likedByCurrentWorker !== null && snapshot.likedByCurrentWorker !== undefined) {
+      setJobLikes((prev) => ({ ...prev, [snapshot.jobId]: !!snapshot.likedByCurrentWorker }));
+    }
+    setJobLikeCounts((prev) => ({ ...prev, [snapshot.jobId]: snapshot.likeCount || 0 }));
+    setJobComments((prev) => ({ ...prev, [snapshot.jobId]: snapshot.comments || [] }));
+  };
 
-  // Re-fetch jobs when workerId becomes available so applied flags are correct
+  const fetchEngagementForJobs = async (jobIds) => {
+    if (!jobIds || jobIds.length === 0) return;
+    try {
+      const responses = await Promise.all(
+        jobIds.map((jobId) =>
+          API.get(`/engagement/jobs/${jobId}`, {
+            params: { workerId },
+          })
+        )
+      );
+      responses.forEach((res) => applyEngagementSnapshot(res.data));
+    } catch (err) {
+      console.error("Failed to fetch engagement snapshots:", err);
+    }
+  };
+
   useEffect(() => {
-    if (workerId) fetchJobs();
+    if (!workerId) return;
+    fetchJobs();
+    try { wsConnect(); } catch (e) {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workerId]);
 
   // Fetch worker applications with full owner information
   const fetchApplications = async () => {
     try {
       const [applicationsRes, jobsRes] = await Promise.all([
-        axios.get(`${API_BASE}/applications/worker/${workerId}`),
-        axios.get(`${API_BASE}/jobs`)
+        API.get(`/applications/worker/${workerId}`),
+        API.get(`/jobs`)
       ]);
       
       // Create a lookup of jobs by ID for efficient access
@@ -207,17 +278,18 @@ useEffect(() => {
     if (activeTab === "applications") {
       fetchApplications();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
   // Apply for a job (protected against duplicates)
   const handleApply = async (job) => {
     try {
       
-      const response = await axios.post(`${API_BASE}/applications`, {
+      const response = await API.post(`/applications`, {
         jobId: job.id,
         workerId,
-        workerName: workerProfile.name,
-        workerSkill: workerProfile.skill,
+        workerName: workerProfile.name || state?.name || `Worker ${workerId}`,
+        workerSkill: workerProfile.workType || workerProfile.skill || "General",
         status: "pending",
       });
 
@@ -237,8 +309,104 @@ useEffect(() => {
     setTimeout(() => setMessage(""), 3000);
   };
 
+  // Like/Comment handlers
+  const toggleJobLike = (jobId) => {
+    if (!workerId) {
+      setMessage("Please login again to like jobs.");
+      setTimeout(() => setMessage(""), 2500);
+      return;
+    }
+    const payload = {
+      workerId,
+      workerName: workerProfile.name || `Worker ${workerId}`,
+    };
+
+    API.post(`/engagement/jobs/${jobId}/likes`, payload)
+      .then((res) => applyEngagementSnapshot(res.data))
+      .catch((err) => {
+        const firstError = extractApiErrorMessage(err);
+        const missingEndpoint = firstError.toLowerCase().includes("no static resource");
+
+        if (missingEndpoint) {
+          API.post(`/engagement/jobs/${jobId}/like`, payload)
+            .then((res) => applyEngagementSnapshot(res.data))
+            .catch((fallbackErr) => {
+              console.error("Like toggle failed (fallback):", fallbackErr);
+              setMessage("Backend build is stale. Restart backend and retry likes/comments.");
+              setTimeout(() => setMessage(""), 3500);
+            });
+          return;
+        }
+
+        console.error("Like toggle failed:", err);
+        setMessage(firstError || "Failed to update like. Please try again.");
+        setTimeout(() => setMessage(""), 2500);
+      });
+  };
+
+  const addJobComment = (jobId) => {
+    if (!newJobComment[jobId]?.trim()) return;
+    if (!workerId) {
+      setMessage("Please login again to comment.");
+      setTimeout(() => setMessage(""), 2500);
+      return;
+    }
+
+    const payload = {
+      workerId,
+      workerName: workerProfile.name || `Worker ${workerId}`,
+      comment: newJobComment[jobId],
+    };
+
+    API.post(`/engagement/jobs/${jobId}/comments`, payload)
+      .then((res) => applyEngagementSnapshot(res.data))
+      .catch((err) => {
+        const firstError = extractApiErrorMessage(err);
+        const missingEndpoint = firstError.toLowerCase().includes("no static resource");
+
+        if (missingEndpoint) {
+          API.post(`/engagement/jobs/${jobId}/comment`, payload)
+            .then((res) => applyEngagementSnapshot(res.data))
+            .catch((fallbackErr) => {
+              console.error("Add comment failed (fallback):", fallbackErr);
+              setMessage("Backend build is stale. Restart backend and retry likes/comments.");
+              setTimeout(() => setMessage(""), 3500);
+            });
+          return;
+        }
+
+        console.error("Add comment failed:", err);
+        setMessage(firstError || "Failed to post comment. Please try again.");
+        setTimeout(() => setMessage(""), 2500);
+      });
+
+    setNewJobComment((prev) => ({
+      ...prev,
+      [jobId]: "",
+    }));
+  };
+
+  const deleteJobComment = (jobId, commentId) => {
+    if (!workerId) {
+      setMessage("Please login again to delete comments.");
+      setTimeout(() => setMessage(""), 2500);
+      return;
+    }
+    API
+      .delete(`/engagement/comments/${commentId}`, {
+        params: { workerId },
+      })
+      .then((res) => applyEngagementSnapshot(res.data))
+      .catch((err) => {
+        console.error("Delete comment failed:", err);
+        setMessage("Failed to delete comment.");
+        setTimeout(() => setMessage(""), 2500);
+      });
+  };
+
   
   // Start sharing worker's browser geolocation to the backend via STOMP
+  // eslint-disable-next-line no-unused-vars
   const startSharingLocation = () => {
     if (!navigator.geolocation) {
       alert('Geolocation not supported');
@@ -259,6 +427,7 @@ useEffect(() => {
     setIsSharing(true);
   };
 
+  // eslint-disable-next-line no-unused-vars
   const stopSharingLocation = () => {
     if (watchId != null) navigator.geolocation.clearWatch(watchId);
     setWatchId(null);
@@ -279,15 +448,21 @@ useEffect(() => {
       } catch (e) {}
     });
     return () => { if (sub) sub.unsubscribe(); };
-  }, []);
+  }, [workerId]);
 
-  // Modal handlers
-  const openPincodeModal = (onSubmit) => {
-    setShowPincodeModal(true);
-  };
-  const submitPincodeModal = () => {
-    setShowPincodeModal(false);
-  };
+  useEffect(() => {
+    if (!jobs.length) return undefined;
+    const subs = jobs.map((job) =>
+      wsSubscribe(`/topic/engagement/job/${job.id}`, (snapshot) => {
+        applyEngagementSnapshot(snapshot);
+      })
+    );
+
+    return () => {
+      subs.forEach((sub) => sub && sub.unsubscribe && sub.unsubscribe());
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jobs.map((job) => job.id).join(",")]);
 
   return (
     <div className="worker-dashboard">
@@ -313,6 +488,18 @@ useEffect(() => {
         >
           📄 My Applications
         </button>
+        <button
+          className={activeTab === "skills" ? "tab active" : "tab"}
+          onClick={() => setActiveTab("skills")}
+        >
+          🧠 Skill Test
+        </button>
+        <button
+          className={activeTab === "notifications" ? "tab active" : "tab"}
+          onClick={() => setActiveTab("notifications")}
+        >
+          🔔 Notifications
+        </button>
       <button
       className={activeTab === "profile" ? "tab active" : "tab"}
       onClick={() => navigate("/WorkerProfile", { state: { id: workerId } })}>
@@ -324,119 +511,209 @@ useEffect(() => {
       {/* JOBS TAB */}
       {activeTab === "jobs" && (
         <div className="jobs-container">
+          {!workerProfile.workType && !workerProfile.skill && (
+            <div className="alert-msg" style={{ marginBottom: "1rem" }}>
+              Complete your skill test to get a verified trust badge and improve acceptance chances.
+              <button
+                style={{ marginLeft: 10 }}
+                className="send-comment-btn"
+                onClick={() => setActiveTab("skills")}
+              >
+                Take Skill Test
+              </button>
+            </div>
+          )}
           {jobs.length === 0 ? (
             <p className="empty-msg">No jobs available right now.</p>
           ) : (
-            <table className="jobs-table">
-              <thead>
-                <tr>
-                  <th>Title</th>
-                  <th>Skill Needed</th>
-                  <th>Location</th>
-                  <th>Pay</th>
-                  <th>Duration</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {jobs.map((job) => (
-                  <tr key={job.id} className={job.alreadyApplied ? "applied-row" : ""}>
-                    <td>{job.title}</td>
-                    <td>{job.skillNeeded}</td>
-                    <td>
-                      {job.location}
-                      {job.area && <div className="location-detail">Area: {job.area}</div>}
-                      {job.colony && <div className="location-detail">Colony: {job.colony}</div>}
-                    </td>
-                    <td>₹{job.pay}</td>
-                    <td>{job.duration} days</td>
-                    <td>
-                      {job.alreadyApplied ? (
-                        <span className={`status ${job.applicationStatus?.toLowerCase()}`}>
-                          {job.applicationStatus}
-                        </span>
-                      ) : (
-                        <span className="status available">Available</span>
-                      )}
-                    </td>
-                    <td>
-                      {job.alreadyApplied ? (
-                        <button className="applied-btn" disabled>
-                          ✅ Already Applied
-                        </button>
-                      ) : (
-                        <button
-                          className="apply-btn"
-                          onClick={() => handleApply(job)}
-                        >
-                          Apply Now
-                        </button>
-                      )}
-                      {/* Show route button: uses job.pincode (owner) and workerProfile.pincode to geocode and show route */}
-                      <div style={{ marginTop: 6 }}>
-                        <button
-                          className="route-btn"
-                          onClick={async () => {
-                            const ownerPcode = job.pincode || job.postalCode || job.zip || job.postalcode;
-                            let destCoords = null;
-                            try {
-                              setRouteLoading(true);
-                              if (ownerPcode) destCoords = await geocodeLocation({ area: job.area, colony: job.colony, state: job.state, pincode: ownerPcode, text: job.location });
-                              else {
-                                const entered = window.prompt("Enter owner pincode / postal code (e.g. 500081)");
-                                if (entered) destCoords = await geocodeLocation({ pincode: entered, text: entered });
-                              }
+            <div className="jobs-grid">
+              {jobs.map((job) => (
+                <div key={job.id} className="job-card">
+                  {/* Card Header */}
+                  <div className="job-card-header">
+                    <div className="job-title-section">
+                      <h3 className="job-title">{job.title}</h3>
+                      <p className="job-skill">
+                        <span className="skill-badge">🛠️ {job.skillNeeded}</span>
+                      </p>
+                    </div>
+                    <span className={`job-status ${job.alreadyApplied ? "applied" : "available"}`}>
+                      {job.alreadyApplied ? `✅ ${job.applicationStatus || "Applied"}` : "🆕 Available"}
+                    </span>
+                  </div>
 
-                              if (!destCoords) {
-                                alert("Could not resolve owner pincode to coordinates.");
-                                return;
-                              }
+                  {/* Card Location & Details */}
+                  <div className="job-card-details">
+                    <div className="detail-item">
+                      <span className="detail-icon">📍</span>
+                      <div className="detail-content">
+                        <strong>Location</strong>
+                        <p>{job.location}</p>
+                        {job.area && <small>Area: {job.area}</small>}
+                        {job.colony && <small> • Colony: {job.colony}</small>}
+                      </div>
+                    </div>
+                    
+                    <div className="detail-row">
+                      <div className="detail-item-inline">
+                        <span className="detail-icon">💰</span>
+                        <strong>₹{job.pay}</strong>
+                      </div>
+                      <div className="detail-item-inline">
+                        <span className="detail-icon">⏱️</span>
+                        <strong>{job.duration} days</strong>
+                      </div>
+                    </div>
+                  </div>
 
-                              // worker pincode from profile or prompt
-                              const workerPcode = workerProfile.pincode || window.prompt("Enter your pincode (worker)");
-                              if (!workerPcode) {
-                                alert("Worker pincode required to show route.");
-                                return;
-                              }
+                  {/* Engagement Section */}
+                  <div className="job-engagement">
+                    <button 
+                      className={`like-btn ${jobLikes[job.id] ? 'liked' : ''}`}
+                      onClick={() => toggleJobLike(job.id)}
+                      title="Like this job"
+                    >
+                      {jobLikes[job.id] ? '❤️' : '🤍'} {jobLikeCounts[job.id] || 0}
+                    </button>
+                    
+                    <button 
+                      className="comments-toggle-btn"
+                      onClick={() => setExpandedJobComments(prev => ({...prev, [job.id]: !prev[job.id]}))}
+                      title="View comments"
+                    >
+                      💬 {jobComments[job.id]?.length || 0} Comments
+                    </button>
+                  </div>
 
-                              const originCoords = await geocodeLocation({ area: workerProfile.area, colony: workerProfile.colony, state: workerProfile.state, pincode: workerPcode, text: workerProfile.location });
-                              if (!originCoords) {
-                                alert("Could not resolve your pincode to coordinates.");
-                                return;
-                              }
-
-                              // set origin/destination coords and info (area/colony/state/pincode)
-                              setRouteOrigin(originCoords);
-                              setRouteTarget(destCoords);
-                              // force RouteMap remount so previous maps don't linger
-                              setRouteKey(Date.now());
-                              setRouteOriginInfo({
-                                area: workerProfile.area || "",
-                                colony: workerProfile.colony || "",
-                                state: workerProfile.state || "",
-                                pincode: workerPcode,
-                              });
-                              setRouteDestInfo({
-                                area: job.area || "",
-                                colony: job.colony || "",
-                                state: job.state || "",
-                                pincode: ownerPcode,
-                              });
-                              setShowRoute(true);
-                            } finally {
-                              setRouteLoading(false);
-                            }
+                  {/* Comments Section */}
+                  {expandedJobComments[job.id] && (
+                    <div className="comments-section">
+                      <div className="comments-list">
+                        {jobComments[job.id]?.length ? (
+                          jobComments[job.id].map(comment => (
+                            <div key={comment.id} className="comment-item">
+                              <div className="comment-header">
+                                <span className="comment-time">
+                                  {comment.createdAt ? new Date(comment.createdAt).toLocaleString() : ""}
+                                </span>
+                                <button 
+                                  className="delete-comment-btn"
+                                  onClick={() => deleteJobComment(job.id, comment.id)}
+                                  title="Delete comment"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                              <p className="comment-text">{comment.comment}</p>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="no-comments">No comments yet. Be the first!</p>
+                        )}
+                      </div>
+                      <div className="comment-input-wrapper">
+                        <input
+                          type="text"
+                          placeholder="Share your thoughts about this job..."
+                          className="comment-input"
+                          value={newJobComment[job.id] || ''}
+                          onChange={(e) => setNewJobComment(prev => ({...prev, [job.id]: e.target.value}))}
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter') addJobComment(job.id);
                           }}
+                        />
+                        <button 
+                          className="send-comment-btn"
+                          onClick={() => addJobComment(job.id)}
+                          disabled={!newJobComment[job.id]?.trim()}
                         >
-                          {routeLoading ? "Loading…" : "🗺️ Show Route"}
+                          Send
                         </button>
                       </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </div>
+                  )}
+
+                  {/* Action Buttons */}
+                  <div className="job-card-actions">
+                    {job.alreadyApplied ? (
+                      <button className="applied-btn" disabled>
+                        ✅ Already Applied
+                      </button>
+                    ) : (
+                      <button
+                        className="apply-btn"
+                        onClick={() => handleApply(job)}
+                      >
+                        Apply Now →
+                      </button>
+                    )}
+                    
+                    <button
+                      className="route-btn"
+                      onClick={async () => {
+                        const ownerPcode = job.pincode || job.postalCode || job.zip || job.postalcode;
+                        let destCoords = null;
+                        try {
+                          setRouteLoading(true);
+                          if (ownerPcode) destCoords = await geocodeLocation({ area: job.area, colony: job.colony, state: job.state, pincode: ownerPcode, text: job.location });
+                          else {
+                            const entered = window.prompt("Enter owner pincode / postal code (e.g. 500081)");
+                            if (entered) destCoords = await geocodeLocation({ pincode: entered, text: entered });
+                          }
+
+                          if (!destCoords) {
+                            const fallbackDest = [job.location, job.area, job.colony, job.state, ownerPcode]
+                              .filter(Boolean)
+                              .join(", ");
+                            const fallbackOrigin = [workerProfile.location, workerProfile.area, workerProfile.colony, workerProfile.state, workerProfile.pincode]
+                              .filter(Boolean)
+                              .join(", ");
+                            const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(
+                              fallbackOrigin || "Current Location"
+                            )}&destination=${encodeURIComponent(fallbackDest || "Owner Location")}`;
+                            window.open(mapsUrl, "_blank", "noopener,noreferrer");
+                            return;
+                          }
+
+                          const workerPcode = workerProfile.pincode || window.prompt("Enter your pincode (worker)");
+                          if (!workerPcode) {
+                            alert("Worker pincode required to show route.");
+                            return;
+                          }
+
+                          const originCoords = await geocodeLocation({ area: workerProfile.area, colony: workerProfile.colony, state: workerProfile.state, pincode: workerPcode, text: workerProfile.location });
+                          if (!originCoords) {
+                            alert("Could not resolve your pincode to coordinates.");
+                            return;
+                          }
+
+                          setRouteOrigin(originCoords);
+                          setRouteTarget(destCoords);
+                          setRouteKey(Date.now());
+                          setRouteOriginInfo({
+                            area: workerProfile.area || "",
+                            colony: workerProfile.colony || "",
+                            state: workerProfile.state || "",
+                            pincode: workerPcode,
+                          });
+                          setRouteDestInfo({
+                            area: job.area || "",
+                            colony: job.colony || "",
+                            state: job.state || "",
+                            pincode: ownerPcode,
+                          });
+                          setShowRoute(true);
+                        } finally {
+                          setRouteLoading(false);
+                        }
+                      }}
+                    >
+                      {routeLoading ? "Loading…" : "🗺️ Route"}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       )}
@@ -511,7 +788,16 @@ useEffect(() => {
                                   }
 
                                   if (!destCoords) {
-                                    alert("Could not resolve owner pincode to coordinates.");
+                                    const fallbackDest = [app.location, app.ownerArea, app.ownerColony, app.ownerState, pcode]
+                                      .filter(Boolean)
+                                      .join(", ");
+                                    const fallbackOrigin = [workerProfile.location, workerProfile.area, workerProfile.colony, workerProfile.state, workerProfile.pincode]
+                                      .filter(Boolean)
+                                      .join(", ");
+                                    const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(
+                                      fallbackOrigin || "Current Location"
+                                    )}&destination=${encodeURIComponent(fallbackDest || "Owner Location")}`;
+                                    window.open(mapsUrl, "_blank", "noopener,noreferrer");
                                     return;
                                   }
 
@@ -562,6 +848,15 @@ useEffect(() => {
         </div>
       )}
 
+      {activeTab === "skills" && (
+        <WorkerSkillTest
+          workerId={workerId}
+          defaultSkill={workerProfile.workType || workerProfile.skill || "general"}
+        />
+      )}
+
+      {activeTab === "notifications" && <WorkerNotifications workerId={workerId} />}
+
       {/* CHAT MODAL */}
       {chatApplication && (
         <ChatModal
@@ -592,5 +887,3 @@ useEffect(() => {
 };
 
 export default WorkerDashboard;
-
-

@@ -1,0 +1,28 @@
+.backend-badge {
+  margin-top: 0.3rem;
+  padding: 0.28rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  width: fit-content;
+}
+
+.backend-badge.loading {
+  color: #334155;
+  background: rgba(226, 232, 240, 0.9);
+}
+
+.backend-badge.ok {
+  color: #065f46;
+  background: rgba(167, 243, 208, 0.95);
+}
+
+.backend-badge.warn {
+  color: #92400e;
+  background: rgba(253, 230, 138, 0.95);
+}
+
+.backend-badge.error {
+  color: #991b1b;
+  background: rgba(254, 202, 202, 0.95);
+}

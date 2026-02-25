@@ -7,7 +7,8 @@ import AddJobModal from "./AddJobModal";
 import "./JobManager.css";
 import OwnerHeader from "./OwnerHeader";
 import axios from "axios";
-const API_BASE = "https://shramsaathibackend.onrender.com/api";
+import { API_BASE_URL } from "../../config/environment";
+const API_BASE = API_BASE_URL;
 
 const JobManager = () => {
   const [jobs, setJobs] = useState([]);
@@ -29,9 +30,11 @@ const JobManager = () => {
   };
 
   useEffect(() => {
+    if (!state?.id) return;
     fetchJobs();
     fetchWorkers();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state?.id]);
 
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this job?")) {

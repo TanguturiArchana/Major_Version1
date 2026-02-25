@@ -3,8 +3,9 @@ import { useEffect, useState } from "react";
 import "./ApplicationsPanel.css";
 import Chat from "./Chat";
 import { useOutletContext } from "react-router-dom";
+import { API_BASE_URL } from "../../config/environment";
 
-const API_BASE = "https://shramsaathibackend.onrender.com/api";
+const API_BASE = API_BASE_URL;
 
 
 const ApplicationsPanel = () => {
@@ -27,9 +28,16 @@ const ApplicationsPanel = () => {
   const [appliedMinExperience, setAppliedMinExperience] = useState(null);
   const [appliedMaxExperience, setAppliedMaxExperience] = useState(null);
   const [appliedFilterPincode, setAppliedFilterPincode] = useState("");
-  const [message, setMessage] = useState(""); 
+  const [message, setMessage] = useState("");
+  const [likes, setLikes] = useState({});
+  const [comments, setComments] = useState({});
+  const [newComment, setNewComment] = useState({});
+  const [expandedComments, setExpandedComments] = useState({}); 
+  const [skillProfilesByWorker, setSkillProfilesByWorker] = useState({});
+  const [engagementByJob, setEngagementByJob] = useState({});
 
   useEffect(() => {
+    if (!state?.id) return;
     const fetchJobs = async () => {
       try {
        const res = await axios.get(`${API_BASE}/jobs/owner/${state.id}`); 
@@ -53,14 +61,22 @@ const ApplicationsPanel = () => {
       }
     };
     fetchJobs();
-  }, []);
+  }, [state?.id]);
 const fetchApplications = async () => {
   if (!selectedJobId) return;
 
   setLoading(true);
   try {
-    const res = await axios.get(`${API_BASE}/applications/job/${selectedJobId}`);
+    const [res, ownerEngagementRes] = await Promise.all([
+      axios.get(`${API_BASE}/applications/job/${selectedJobId}`),
+      state?.id ? axios.get(`${API_BASE}/engagement/owners/${state.id}`) : Promise.resolve({ data: [] }),
+    ]);
     const apps = res.data || [];
+    const engagementMap = {};
+    (ownerEngagementRes.data || []).forEach((card) => {
+      engagementMap[String(card.jobId)] = card;
+    });
+    setEngagementByJob(engagementMap);
     const workerIds = [...new Set(apps.map((a) => a.workerId).filter(Boolean))];
     const workersById = {};
 
@@ -84,6 +100,22 @@ const fetchApplications = async () => {
           console.log(`Stored worker ${wr.id} in workersById:`, wr.data); 
         }
       });
+
+      const skillResponses = await Promise.all(
+        workerIds.map(async (id) => {
+          try {
+            const response = await axios.get(`${API_BASE}/skill-tests/worker/${id}`);
+            return { id: String(id), data: response.data || [] };
+          } catch (e) {
+            return { id: String(id), data: [] };
+          }
+        })
+      );
+      const map = {};
+      skillResponses.forEach((sr) => {
+        map[sr.id] = sr.data;
+      });
+      setSkillProfilesByWorker(map);
     }
 
     const enriched = apps.map((app) => {
@@ -104,6 +136,7 @@ const fetchApplications = async () => {
 
   useEffect(() => {
     fetchApplications();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedJobId]);
 
 
@@ -181,6 +214,41 @@ const updateStatus = async (appId, status) => {
   }
 
   setTimeout(() => setMessage(""), 3000);
+};
+
+const toggleLike = (appId) => {
+  setLikes(prev => ({
+    ...prev,
+    [appId]: !prev[appId]
+  }));
+};
+
+const addComment = (appId) => {
+  if (!newComment[appId]?.trim()) return;
+  
+  setComments(prev => ({
+    ...prev,
+    [appId]: [
+      ...(prev[appId] || []),
+      {
+        id: Date.now(),
+        text: newComment[appId],
+        timestamp: new Date().toLocaleTimeString()
+      }
+    ]
+  }));
+  
+  setNewComment(prev => ({
+    ...prev,
+    [appId]: ""
+  }));
+};
+
+const deleteComment = (appId, commentId) => {
+  setComments(prev => ({
+    ...prev,
+    [appId]: prev[appId].filter(c => c.id !== commentId)
+  }));
 };
 
 
@@ -347,7 +415,7 @@ const updateStatus = async (appId, status) => {
   if (resultsCount === 0) return <p className="empty-msg">No applications match the current filters.</p>;
 
         // Debug panel: show per-application values and whether they passed filters
-        const debugPanel = showDebug ? (
+        // const debugPanel = showDebug ? (
           <div style={{ margin: '10px 0', padding: 12, background: '#f8fafc', borderRadius: 8, border: '1px solid #e6eefc' }}>
             <strong style={{ display: 'block', marginBottom: 8 }}>Filter debug</strong>
             {applications.map((app) => {
@@ -383,92 +451,191 @@ const updateStatus = async (appId, status) => {
               )
             })}
           </div>
-        ) : null;
+        // ) : null;
 
         return (
-          <table className="applications-table">
-            <thead>
-              <tr>
-                <th>Worker Name</th>
-                <th>Skill</th>
-                <th>Applied On</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {finalApplications.map((app) => (
-                <tr key={app.id}>
-                  <td>
-                    <div className="worker-main">
-                      <div className="worker-name">
-                        {(app.workerProfile && app.workerProfile.name) || app.workerName || "Unnamed Worker"}
-                      </div>
-                      {app.workerProfile ? (
-                            <div className="worker-details">
-                          {app.workerProfile.phone && <div>📞 {app.workerProfile.phone}</div>}
-                          {app.workerProfile.address && <div>🏠 {app.workerProfile.address}</div>}
-                          {(app.workerProfile.area || app.workerProfile.colony || app.workerProfile.pincode) && (
-                            <div>📍 {`${app.workerProfile.area || ''}${app.workerProfile.colony ? ', ' + app.workerProfile.colony : ''}${app.workerProfile.pincode ? ', ' + app.workerProfile.pincode : ''}`}</div>
-                          )}
-                          {(app.workerProfile.workType || app.workerProfile.skill) && (
-                            <div>🛠️ {app.workerProfile.workType || app.workerProfile.skill}</div>
-                          )}
-                          {app.workerProfile.age != null && <div>🎂 Age: {app.workerProfile.age}</div>}
-                          {app.workerProfile.experienceYears != null && <div>📈 Exp: {app.workerProfile.experienceYears} yrs</div>}
-                              <div style={{ marginTop: 8 }}>
-                                <button
-                                  className="clear-btn"
-                                  onClick={() => setOpenProfileIds(prev => ({ ...prev, [app.id]: !prev[app.id] }))}
-                                >
-                                  {openProfileIds[app.id] ? 'Hide profile' : 'View profile'}
-                                </button>
-                              </div>
-                        </div>
-                      ) : (
-                        <div className="worker-details">No profile available</div>
-                      )}
-                          {openProfileIds[app.id] && app.workerProfile && (
-                            <pre style={{ background: '#f3f4f6', padding: 10, borderRadius: 8, marginTop: 8, overflowX: 'auto' }}>
-                              {JSON.stringify(app.workerProfile, null, 2)}
-                            </pre>
-                          )}
-                    </div>
-                  </td>
-                  <td>{app.workerSkill || "N/A"}</td>
-                  <td>{new Date(app.appliedAt).toLocaleDateString()}</td>
-                  <td>
-                    <span className={`status ${app.status?.toLowerCase()}`}>
-                      {app.status}
-                    </span>
-                  </td>
-                  <td>
-                    <button
-                      className="accept-btn"
-                      onClick={() => updateStatus(app.id, "ACCEPTED")}
-                    >
-                      Accept
-                    </button>
-                    <button
-                      className="reject-btn"
-                      onClick={() => updateStatus(app.id, "REJECTED")}
-                    >
-                      Reject
-                    </button>
+          <div className="applications-grid">
+            {finalApplications.map((app) => (
+              <div key={app.id} className="application-card">
+                {/* Header with worker name and status */}
+                <div className="card-header">
+                  <div>
+                    <h3 className="worker-card-name">
+                      {(app.workerProfile && app.workerProfile.name) || app.workerName || "Unnamed Worker"}
+                    </h3>
+                    <p className="applied-date">
+                      📅 Applied on {new Date(app.appliedAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <span className={`status ${app.status?.toLowerCase()}`}>
+                    {app.status}
+                  </span>
+                </div>
 
-                    {app.status === "ACCEPTED" && (
-                      <button
-                        className="chat-btn"
-                        onClick={() => setOpenChatFor(app)}
-                      >
-                        💬 Chat
-                      </button>
+                {/* Worker Details */}
+                {app.workerProfile ? (
+                  <div className="card-details">
+                    {app.workerProfile.phone && <div className="detail-item">📞 {app.workerProfile.phone}</div>}
+                    {app.workerProfile.address && <div className="detail-item">🏠 {app.workerProfile.address}</div>}
+                    {(app.workerProfile.area || app.workerProfile.colony || app.workerProfile.pincode) && (
+                      <div className="detail-item">
+                        📍 {`${app.workerProfile.area || ''}${app.workerProfile.colony ? ', ' + app.workerProfile.colony : ''}${app.workerProfile.pincode ? ', ' + app.workerProfile.pincode : ''}`}
+                      </div>
                     )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    {(app.workerProfile.workType || app.workerProfile.skill) && (
+                      <div className="detail-item">🛠️ {app.workerProfile.workType || app.workerProfile.skill}</div>
+                    )}
+                    {app.workerProfile.age != null && <div className="detail-item">🎂 Age: {app.workerProfile.age}</div>}
+                    {app.workerProfile.experienceYears != null && <div className="detail-item">📈 Exp: {app.workerProfile.experienceYears} yrs</div>}
+                  </div>
+                ) : (
+                  <div className="card-details">No profile available</div>
+                )}
+
+                {/* Skill */}
+                <div className="card-skill">
+                  <strong>Applied for:</strong>{" "}
+                  {app.workerSkill || app.workerProfile?.workType || app.workerProfile?.skill || "General"}
+                </div>
+
+                <div className="card-skill">
+                  <strong>Trust score:</strong>{" "}
+                  {(() => {
+                    const profiles = skillProfilesByWorker[String(app.workerId)] || [];
+                    if (!profiles.length) return "Not assessed yet";
+                    const top = profiles[0];
+                    return `${top.level} (${top.score}%) in ${top.skill}`;
+                  })()}
+                </div>
+
+                <div className="card-skill">
+                  <strong>Job Reactions:</strong>{" "}
+                  {(() => {
+                    const engagement = engagementByJob[String(app.jobId)];
+                    if (!engagement) return "No worker reactions yet";
+                    const likesCount = engagement.likeCount || 0;
+                    const commentsCount = engagement.commentCount || 0;
+                    if (!commentsCount) return `${likesCount} likes, 0 comments`;
+                    const preview = engagement.latestCommentPreview
+                      ? ` Latest: "${engagement.latestCommentPreview}"`
+                      : "";
+                    return `${likesCount} likes, ${commentsCount} comments.${preview}`;
+                  })()}
+                </div>
+
+                <div className="card-skill">
+                  <strong>Owner Notes:</strong> Internal shortlist/comments visible only in this panel.
+                </div>
+
+                {/* Like and Comment Section */}
+                <div className="card-engagement">
+                  <button 
+                    className={`like-btn ${likes[app.id] ? 'liked' : ''}`}
+                    onClick={() => toggleLike(app.id)}
+                    title="Like this application"
+                  >
+                    {likes[app.id] ? '❤️' : '🤍'} {Object.keys(likes).filter(k => likes[k]).length || 0}
+                  </button>
+                  
+                  <button 
+                    className="comments-toggle-btn"
+                    onClick={() => setExpandedComments(prev => ({...prev, [app.id]: !prev[app.id]}))}
+                    title="View comments"
+                  >
+                    💬 {comments[app.id]?.length || 0} Comments
+                  </button>
+                </div>
+
+                {/* Comments Section */}
+                {expandedComments[app.id] && (
+                  <div className="comments-section">
+                    <div className="comments-list">
+                      {comments[app.id]?.length ? (
+                        comments[app.id].map(comment => (
+                          <div key={comment.id} className="comment-item">
+                            <div className="comment-header">
+                              <span className="comment-time">{comment.timestamp}</span>
+                              <button 
+                                className="delete-comment-btn"
+                                onClick={() => deleteComment(app.id, comment.id)}
+                                title="Delete comment"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                            <p className="comment-text">{comment.text}</p>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="no-comments">No comments yet. Add one!</p>
+                      )}
+                    </div>
+                    <div className="comment-input-wrapper">
+                      <input
+                        type="text"
+                        placeholder="Add a comment..."
+                        className="comment-input"
+                        value={newComment[app.id] || ''}
+                        onChange={(e) => setNewComment(prev => ({...prev, [app.id]: e.target.value}))}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') addComment(app.id);
+                        }}
+                      />
+                      <button 
+                        className="send-comment-btn"
+                        onClick={() => addComment(app.id)}
+                        disabled={!newComment[app.id]?.trim()}
+                      >
+                        Send
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Action Buttons */}
+                <div className="card-actions">
+                  <button
+                    className="accept-btn"
+                    onClick={() => updateStatus(app.id, "ACCEPTED")}
+                  >
+                    ✅ Accept
+                  </button>
+                  <button
+                    className="reject-btn"
+                    onClick={() => updateStatus(app.id, "REJECTED")}
+                  >
+                    ❌ Reject
+                  </button>
+
+                  {app.status === "ACCEPTED" && (
+                    <button
+                      className="chat-btn"
+                      onClick={() => setOpenChatFor(app)}
+                    >
+                      💬 Chat
+                    </button>
+                  )}
+
+                  {app.workerProfile && (
+                    <button
+                      className="profile-btn"
+                      onClick={() => setOpenProfileIds(prev => ({ ...prev, [app.id]: !prev[app.id] }))}
+                    >
+                      {openProfileIds[app.id] ? '📋 Hide Profile' : '📋 Full Profile'}
+                    </button>
+                  )}
+                </div>
+
+                {/* Full Profile JSON */}
+                {openProfileIds[app.id] && app.workerProfile && (
+                  <details className="profile-details">
+                    <summary>View Full Profile Data</summary>
+                    <pre>{JSON.stringify(app.workerProfile, null, 2)}</pre>
+                  </details>
+                )}
+              </div>
+            ))}
+          </div>
         );
       })()}
 
@@ -486,5 +653,3 @@ const updateStatus = async (appId, status) => {
 };
 
 export default ApplicationsPanel;
-
-

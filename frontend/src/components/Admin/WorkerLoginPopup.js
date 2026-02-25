@@ -3,12 +3,14 @@ import { useNavigate } from "react-router-dom";
 import "./Popup.css";
 import API from "./api";
 import axios from "axios";
+import { API_BASE_URL } from "../../config/environment";
+import { saveAuthTokens } from "../../services/authToken";
 const LoginPopup = ({ onClose,name ,phone,isAfterWorkerRegister }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const nav=useNavigate();
   async function getWorkerId(name, phone) {
-  const res = await axios.get(`https://shramsaathibackend.onrender.com/api/users/findWorker`, {
+  const res = await axios.get(`${API_BASE_URL}/users/findWorker`, {
     params: { name, phone }
   });
   return res.data.id;
@@ -20,6 +22,10 @@ const LoginPopup = ({ onClose,name ,phone,isAfterWorkerRegister }) => {
   try {
      const res = await API.post(`/login/user?name=${username}&password=${password}`);
     if (res.status === 200) {
+      saveAuthTokens({
+        accessToken: res?.data?.accessToken,
+        refreshToken: res?.data?.refreshToken,
+      });
       if(isAfterWorkerRegister ){
         const id = await getWorkerId(name, phone);
         console.log("login via register",id);
@@ -29,10 +35,11 @@ const LoginPopup = ({ onClose,name ,phone,isAfterWorkerRegister }) => {
 
       }
       else{
-        const res = await axios.get(`https://shramsaathibackend.onrender.com/api/users/findByNameAndPassword`, {
-           params: { name: username, password } 
-        });
-        const id=res.data.id;
+        const id = res?.data?.id;
+        if (!id) {
+          alert("Login response missing user id");
+          return;
+        }
         console.log("login via login",id);
         alert("Worker Login successful!");
         nav("/workerDashboard", {state:{id}});

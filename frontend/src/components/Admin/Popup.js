@@ -1,9 +1,8 @@
 import { useState } from "react";
 import OwnerLoginPopup from "./OwnerLoginPopup";
 import "./Popup.css";
-import axios from "axios";
 import WorkerLoginPopup from "./WorkerLoginPopup";
-import API from "./api";
+import API from "../../services/api";
 const Popup = ({ onClose }) => {
   const [showWorkerForm, setShowWorkerForm] = useState(false);
   const [showOwnerForm, setShowOwnerForm] = useState(false);
@@ -42,7 +41,7 @@ const Popup = ({ onClose }) => {
 
 
   try {
-    const res = await API.post("/register/user", workerData);
+    const res = await API.post("/auth/register/user", workerData);
     const password = res.data.split(": ").pop(); 
     setGeneratedPassword(password);
     setShowSuccess("worker");
@@ -67,7 +66,7 @@ const Popup = ({ onClose }) => {
 const handleOwnerSubmit = async (e) => {
   e.preventDefault();
   try {
-    const res = await API.post("/register/owner", ownerData);
+    const res = await API.post("/auth/register/owner", ownerData);
     setName(ownerData.name);
     const password = res.data.split(": ").pop();
     setGeneratedPassword(password);
@@ -189,10 +188,10 @@ const handleOwnerSubmit = async (e) => {
         <h2>Login or Register</h2>
         <p>Select your role to continue:</p>
         <button className="btn-primary" onClick={() => setShowWorkerForm(true)}>
-          Login as Worker
+          Register as Worker
         </button>
         <button className="btn-success" onClick={() => setShowOwnerForm(true)}>
-          Login as Owner
+          Register as Owner
         </button>
         <button className="btn-close" onClick={onClose}>
           Close
@@ -203,5 +202,3 @@ const handleOwnerSubmit = async (e) => {
 };
 
 export default Popup;
-
-

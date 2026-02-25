@@ -1,0 +1,60 @@
+.pulse-wrap {
+  margin: 1.5rem auto;
+  width: min(1200px, 94%);
+  background: radial-gradient(circle at top left, #fff7ed 0%, #f0f9ff 45%, #f5f3ff 100%);
+  border-radius: 20px;
+  padding: 1.1rem;
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+}
+
+.pulse-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.85rem;
+}
+
+.pulse-head h2 {
+  margin: 0;
+  color: #0f172a;
+}
+
+.pulse-head button {
+  border: none;
+  border-radius: 10px;
+  padding: 0.5rem 0.9rem;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  background: linear-gradient(135deg, #f97316, #db2777);
+}
+
+.pulse-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.85rem;
+}
+
+.pulse-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0.9rem;
+}
+
+.pulse-card h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+}
+
+.pulse-metrics {
+  display: flex;
+  gap: 0.5rem;
+  font-weight: 700;
+}
+
+.pulse-comment {
+  color: #475569;
+  font-size: 0.9rem;
+  margin: 0.55rem 0 0 0;
+}

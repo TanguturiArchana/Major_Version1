@@ -95,7 +95,7 @@ public class OwnerService {
                 .district(request.getDistrict())
                 .mandal(request.getMandal())
                 .pincode(request.getPincode())
-                .password(password)
+                .password(passwordEncoder.encode(password))
                 .registered(true)
                 .build();
 

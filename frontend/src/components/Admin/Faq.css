@@ -1,34 +1,86 @@
 .faq-section {
-  background-color: #fff;
-  padding: 60px 20px;
+  max-width: 1240px;
+  margin: 1.2rem auto 2rem auto;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(14, 165, 233, 0.12), transparent 30%),
+    linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  padding: 1.4rem;
+  border-radius: 22px;
+  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.08);
+  border: 1px solid #e2e8f0;
+}
+
+.faq-header {
   text-align: center;
+  margin-bottom: 1rem;
 }
 
-.faq-section h2 {
-  font-size: 1.6rem;
-  font-weight: 600;
-  color: #1e3a8a;
-  margin-bottom: 30px;
+.faq-header h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: clamp(1.4rem, 2.8vw, 2rem);
+  font-weight: 800;
 }
 
-.faq-section ul {
-  list-style: none;
-  max-width: 600px;
+.faq-header p {
+  margin: 0.5rem 0 0 0;
+  color: #475569;
+}
+
+.faq-list {
+  max-width: 980px;
   margin: 0 auto;
-  padding: 0;
+  display: grid;
+  gap: 0.7rem;
+}
+
+.faq-item {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.faq-item.open {
+  border-color: #93c5fd;
+  box-shadow: 0 10px 18px rgba(37, 99, 235, 0.12);
+}
+
+.faq-question {
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 0.95rem 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+  color: #0f172a;
+  font-size: 1rem;
+  font-weight: 700;
   text-align: left;
 }
 
-.faq-section li {
-  font-size: 1rem;
-  color: #444;
-  margin-bottom: 12px;
-  line-height: 1.5;
-  padding-left: 10px;
+.faq-icon {
+  color: #2563eb;
+  font-size: 1.3rem;
+  font-weight: 800;
+  line-height: 1;
 }
 
-.faq-section li::before {
-  content: "•";
-  color: #2563eb;
-  margin-right: 8px;
+.faq-answer {
+  margin: 0;
+  padding: 0 1rem 1rem 1rem;
+  color: #334155;
+  line-height: 1.6;
+  font-size: 0.96rem;
+}
+
+@media (max-width: 768px) {
+  .faq-section {
+    margin: 1rem 0.85rem 1.4rem 0.85rem;
+    padding: 1rem;
+  }
 }

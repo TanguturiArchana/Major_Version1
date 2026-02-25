@@ -1,6 +1,5 @@
 import axios from "axios";
-
-const API_BASE_URL = "https://shramsaathibackend.onrender.com/api";
+import { API_BASE_URL } from "../config/environment";
 
 export const jobService = {
   //  Get all jobs

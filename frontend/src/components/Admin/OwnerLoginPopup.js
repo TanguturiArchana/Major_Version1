@@ -3,12 +3,14 @@ import { useNavigate } from "react-router-dom";
 import "./Popup.css";
 import axios from "axios";
 import API from "./api";
+import { API_BASE_URL } from "../../config/environment";
+import { saveAuthTokens } from "../../services/authToken";
 const OwnerLoginPopup = ({ onClose,name ,phone,isAfterRegister}) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const nav=useNavigate();
    async function getOwnerId(name, phone) {
-    const res = await axios.get(`https://shramsaathibackend.onrender.com/api/owners/find`, {
+    const res = await axios.get(`${API_BASE_URL}/owners/find`, {
       params: { name, phone }
     });
     return res.data.id;
@@ -18,6 +20,10 @@ const OwnerLoginPopup = ({ onClose,name ,phone,isAfterRegister}) => {
   try {
     const res = await API.post(`/login/owner?name=${username}&password=${password}`);
     if (res.status === 200) {
+      saveAuthTokens({
+        accessToken: res?.data?.accessToken,
+        refreshToken: res?.data?.refreshToken,
+      });
       if(isAfterRegister){
         const id = await getOwnerId(name, phone);
         console.log("login via register",id);
@@ -25,10 +31,11 @@ const OwnerLoginPopup = ({ onClose,name ,phone,isAfterRegister}) => {
         nav("/ownerDashboard",{state:{id}});
       }
       else{
-        const res = await axios.get(`https://shramsaathibackend.onrender.com/api/owners/findByNameAndPassword`, {
-           params: { name: username, password } 
-        });
-        const id=res.data.id;
+        const id = res?.data?.id;
+        if (!id) {
+          alert("Login response missing owner id");
+          return;
+        }
         console.log("login via login",id);
         alert("Login successful!");
         nav("/ownerDashboard", {state:{id}});

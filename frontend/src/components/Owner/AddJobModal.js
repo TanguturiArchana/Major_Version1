@@ -2,7 +2,6 @@ import { useState } from "react";
 import { jobService } from "../../services/jobService";
 import "./AddJobModal.css";
 import "./JobManager.css";
-import axios from "axios";
 
 const AddJobModal = ({ closeModal, onJobAdded ,id}) => {
   const [form, setForm] = useState({
@@ -29,9 +28,6 @@ const AddJobModal = ({ closeModal, onJobAdded ,id}) => {
     e.preventDefault();
     try {
       const payload = { ...form };
-      await axios.get(`https://shramsaathibackend.onrender.com/api/jobs/owner/${id}`)
-      .then(res => console.log(res.data))
-      .catch(err => console.log(err));
 
       if (payload.pincode === "") delete payload.pincode;
       else payload.pincode = parseInt(payload.pincode);

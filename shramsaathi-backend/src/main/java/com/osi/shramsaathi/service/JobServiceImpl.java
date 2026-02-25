@@ -24,13 +24,15 @@ import com.osi.shramsaathi.repository.JobRepository;
 public class JobServiceImpl implements JobService {
 
     private final JobRepository jobRepository;
+    private final NotificationService notificationService;
     private final HttpClient httpClient = HttpClient.newHttpClient();
     private final ObjectMapper objectMapper = new ObjectMapper();
     // Simple in-memory cache for geocoding queries -> [lat, lon]
     private final ConcurrentHashMap<String, double[]> geocodeCache = new ConcurrentHashMap<>();
 
-    public JobServiceImpl(JobRepository jobRepository) {
+    public JobServiceImpl(JobRepository jobRepository, NotificationService notificationService) {
         this.jobRepository = jobRepository;
+        this.notificationService = notificationService;
     }
 
     private JobResponse map(Job job) {
@@ -127,6 +129,7 @@ public class JobServiceImpl implements JobService {
         }
 
         Job saved = jobRepository.save(job);
+        notificationService.notifySkillMatchedWorkers(saved);
         return map(saved);
     }
 

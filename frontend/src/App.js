@@ -4,6 +4,7 @@ import Navbar from "./components/Admin/Navbar";
 import Home from "./components/Admin/Home";
 import Stats from "./components/Admin/Stats";
 import Opening from "./components/Admin/Opening";
+import Faq from "./components/Admin/Faq";
 import Footer from "./components/Admin/Footer";
 import WorkerDashboard from "./components/Worker/WorkerDashboard";
 import OwnerLayout from "./components/Owner/OwnerLayout";
@@ -12,6 +13,8 @@ import Analytics from "./components/Owner/Analytics";
 import ApplicationsPanel from "./components/Owner/ApplicationsPanel";
 import OwnerProfile from "./components/Owner/OwnerProfile";
 import WorkerProfile from "./components/Worker/WorkerProfile";
+import EngagementHub from "./components/Owner/EngagementHub";
+import EngagementPulse from "./components/Admin/EngagementPulse";
 
 
 function App() {
@@ -22,11 +25,13 @@ function App() {
         <Route
           path="/"
           element={
-            <div className="min-h-screen bg-gray-50 text-gray-800">
+            <div className="landing-shell">
               <Navbar />
               <Home />
               <Stats />
+              <EngagementPulse />
               <Opening />
+              <Faq />
               <Footer />
             </div>
           }
@@ -37,6 +42,7 @@ function App() {
           <Route path="/ownerDashboard" element={<Navigate to="/owner/jobs" />} />
           <Route path="/owner/jobs" element={<JobManager />} />
           <Route path="/owner/analytics" element={<Analytics />} />
+          <Route path="/owner/engagement" element={<EngagementHub />} />
           <Route path="/owner/applications" element={<ApplicationsPanel />} />
           <Route path="/owner/profile" element={<OwnerProfile />} />
           
