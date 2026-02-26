@@ -6,13 +6,11 @@ import java.util.List;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import com.osi.shramsaathi.dto.UserRequest;
 import com.osi.shramsaathi.dto.UserResponse;
 import com.osi.shramsaathi.model.User;
 import com.osi.shramsaathi.repository.UserRepository;
 import com.osi.shramsaathi.service.UserService;
-
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -20,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-     private final BCryptPasswordEncoder passwordEncoder=new BCryptPasswordEncoder();
+    private final BCryptPasswordEncoder passwordEncoder;
 
     @Override
     public UserResponse register(UserRequest request) {
@@ -113,7 +111,7 @@ public class UserServiceImpl implements UserService {
         throw new RuntimeException("Owner With Given Password And name is not found :Invalid credentials");
     }
     /** Convert User → UserResponse DTO */
-    private UserResponse toResponse(User user) {
+    public UserResponse toResponse(User user) {
         return UserResponse.builder()
                 .id(user.getId())
                 .name(user.getName())

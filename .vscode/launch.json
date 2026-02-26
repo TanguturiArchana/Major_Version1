@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Run Shramsaathi Backend",
+      "request": "launch",
+      "mainClass": "com.osi.shramsaathi.ShramsaathiBackendApplication",
+      "projectName": "shramsaathi-backend",
+      "cwd": "${workspaceFolder}/shramsaathi-backend",
+      "envFile": "${workspaceFolder}/shramsaathi-backend/.env"
+    }
+  ]
+}
